@@ -1,0 +1,61 @@
+x-minio-common: &minio-common
+  image: quay.io/minio/minio:RELEASE.2022-10-15T19-57-03Z 
+  expose:
+    - "9000"
+    - "9001"
+  environment: 
+    MINIO_ACCESS_KEY: minio
+    MINIO_SECRET_KEY: minio1234
+
+  command: server --console-address ":9001" http://minio{1...4}/data{1...2} 
+
+  healthcheck:
+    test: ["CMD", "curt", "-f", "http://localhost:9000/minio/health/live"]
+    interval: 40s
+    retries: 3
+    timeout: 20s
+
+services:
+  minio1:
+    <<: *minio-common
+    volumes:
+      - data1-1:/data1
+      - data1-2:/data2
+  minio2:
+    <<: *minio-common
+    volumes:
+      - data2-1:/data1
+      - data2-2:/data2
+  minio3:
+    <<: *minio-common
+    volumes:
+      - data3-1:/data1
+      - data3-2:/data2
+
+  minio4:
+    <<: *minio-common
+    volumes:
+      - data4-1:/data1
+      - data4-2:/data2
+  nginx:
+    image: nginx:1.19.2-alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro 
+    ports:
+      - "9000:9000" 
+      - "9001:9001"
+    depends_on:
+      - minio1
+      - minio2
+      - minio3
+      - minio4
+volumes: 
+  data1-1:
+  data1-2:
+  data2-1:
+  data2-2:
+  data3-1:
+  data3-2:
+  data4-1:
+  data4-2:
+
