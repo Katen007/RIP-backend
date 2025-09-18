@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <title>TxtMetric — Заявка</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/static/styles/texts_style.css">
+  <link rel="stylesheet" href="/static/styles/readIndxs.css">
+</head>
+<body>
+  <header class="header">
+    <a class="brand" href="/texts">TxtMetric</a>
+  </header>
+
+  <main class="container">
+    <div class="titlebar">
+      <h1 class="page-title" style="margin:0">Составление заявки</h1>
+    </div>
+
+    {{ if not .items }}
+      <p class="muted">Заявка пуста. Перейдите на <a href="/texts">страницу текстов</a> и добавьте услуги кликом по картинке.</p>
+    {{ else }}
+    <div class="form-section">
+      <textarea class="form-input comments" placeholder="Пожелания / комментарии"></textarea>
+      <input type="text" class="form-input contacts" placeholder="Контактные данные"/>
+    </div>
+    <section class="list">
+      {{ range .items }}
+      <article class="row">
+        <img class="row__img" src="{{.Text.ImageURL }}" alt="{{.Text.Title }}">
+        <div class="row__content">
+          <h3 class="row__title">{{.Text.Title }}</h3>
+          
+          <a class="row__btn" href="/text/{{.Text.ID }}">Подробнее</a>
+        </div>
+        
+        <a class="icon-btn" href="/readIndxs/remove/{{.Text.ID }}" title="Удалить">
+          <img src="http://localhost:9000/img/img/icon_trash.svg" width="22" height="22" alt="Удалить">
+        </a>
+        <div>
+          <input type="text" class="row__input" placeholder="Фога, SMOG, Флеша и т.п." />
+        </div>
+        <div class="total">
+        <label for="textTotal" class="total__label">Индекс читабельности:</label>
+        <br/>
+        <span id="textTotal" class="total__value">{{.IndexRead}}</span>
+    
+        </div>
+      </article>
+      {{ end }}
+    </section>
+    
+    {{ end }}
+
+  </main>
+  
+</body>
+</html>
