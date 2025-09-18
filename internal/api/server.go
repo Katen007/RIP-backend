@@ -26,9 +26,10 @@ func StartServer() {
 	// слева название папки, в которую выгрузится наша статика
 	// справа путь к папке, в которой лежит статика
 
-	r.GET("/texts", handler.GetOrders)
-	r.GET("/order/:id", handler.GetOrder)
-	r.GET("/cart/:id", handler.ShowCart) // страница заявки
+	r.GET("/texts", handler.GetTexts)
+	r.GET("/texts/:id", handler.GetText)
+	r.GET("/readIndxs/:id", handler.GetReadIndxs)
+	// страница заявки
 	// r.GET("/cart/add/:id", handler.AddToCart)         // добавить
 	// r.GET("/cart/remove/:id", handler.RemoveFromCart) // удалить одну штуку
 

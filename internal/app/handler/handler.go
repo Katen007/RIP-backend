@@ -26,8 +26,6 @@ import (
 //		cartMu.Unlock()
 //	}
 
-var count int = 0
-
 type Handler struct {
 	Repository *repository.Repository
 }
@@ -37,50 +35,55 @@ func NewHandler(r *repository.Repository) *Handler {
 		Repository: r,
 	}
 }
-func (h *Handler) GetOrders(ctx *gin.Context) {
-	var orders []repository.Order
-	var err error
-	cartId := 1
 
-	searchQuery := ctx.Query("query")
-	addItem := ctx.Query("addItem")
-	if addItem != "" {
-		count += 1
-	}
+func (h *Handler) GetTexts(ctx *gin.Context) {
+	var texts []repository.Text
+	var err error
+	readIndxsId := 1
+	items, _ := h.Repository.GetReadIndxsComponents(1)
+	components := items.Texts
+	count := len(components)
+
+	searchQuery := ctx.Query("searchTexts")
+	// addItem := ctx.Query("addItem")
+	// if addItem != "" {
+	// 	count += 1
+	// }
 	if searchQuery == "" { // если поле поиска пусто, то просто получаем из репозитория все записи
-		orders, err = h.Repository.GetOrders()
+		texts, err = h.Repository.GetTexts()
 		if err != nil {
 			logrus.Error(err)
 		}
 	} else {
-		orders, err = h.Repository.GetOrdersByTitle(searchQuery) // в ином случае ищем заказ по заголовку
+		texts, err = h.Repository.GetTextsByTitle(searchQuery) // в ином случае ищем заказ по заголовку
 		if err != nil {
 			logrus.Error(err)
 		}
 	}
 
-	ctx.HTML(http.StatusOK, "index.html", gin.H{
+	ctx.HTML(http.StatusOK, "texts.html", gin.H{
 
-		"orders":    orders,
-		"query":     searchQuery,
-		"cartCount": count,
-		"cartId":    cartId,
+		"texts":          texts,
+		"searchTexts":    searchQuery,
+		"readIndxsCount": count,
+		"readIndxsId":    readIndxsId,
 	})
 }
-func (h *Handler) GetOrder(ctx *gin.Context) {
+func (h *Handler) GetText(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		logrus.Error(err)
 	}
 
-	order, err := h.Repository.GetOrder(id)
+	text, err := h.Repository.GetText(id)
+
 	if err != nil {
 		logrus.Error(err)
 	}
 
-	ctx.HTML(http.StatusOK, "order.html", gin.H{
-		"order": order,
+	ctx.HTML(http.StatusOK, "text.html", gin.H{
+		"text": text,
 	})
 }
 
@@ -104,7 +107,7 @@ func (h *Handler) GetOrder(ctx *gin.Context) {
 //		ctx.Redirect(http.StatusFound, "/cart")
 //	}
 
-func (h *Handler) ShowCart(ctx *gin.Context) {
+func (h *Handler) GetReadIndxs(ctx *gin.Context) {
 	//ids := getCartCopy()
 	// items := make([]repository.Order, 0, len(ids))
 	total := 0
@@ -122,14 +125,12 @@ func (h *Handler) ShowCart(ctx *gin.Context) {
 	// 	// items = append(items, o)
 	// 	total += o.Price
 	// }S
-	items, _ := h.Repository.GetApplicationComponents(id)
-	for _, i := range items {
-		total += i.Price
-	}
+	items, _ := h.Repository.GetReadIndxsComponents(id)
+	itemsCalc := items.Texts
 
-	ctx.HTML(http.StatusOK, "cart.html", gin.H{
-		"items":     items,
+	ctx.HTML(http.StatusOK, "readIndxs.html", gin.H{
+		"readIndxs": items,
 		"total":     total,
-		"cartCount": len(items),
+		"items":     itemsCalc,
 	})
 }
