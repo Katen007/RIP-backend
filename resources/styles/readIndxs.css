@@ -162,3 +162,33 @@
 .total__value{
   font-size: 1.5em;
 }
+.btn-delete {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* расстояние между иконкой и текстом */
+  background-color: #FF5A00; /* красный фон */
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-delete img {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-delete:hover {
+  background-color: #FF5A00;
+  transform: translateY(-1px);
+}
+
+.btn-delete:active {
+  background-color: #FF5A00;
+  transform: translateY(0);
+}

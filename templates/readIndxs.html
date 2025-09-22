@@ -21,8 +21,8 @@
       <p class="muted">Заявка пуста. Перейдите на <a href="/texts">страницу текстов</a> и добавьте услуги кликом по картинке.</p>
     {{ else }}
     <div class="form-section">
-      <textarea class="form-input comments" placeholder="Пожелания / комментарии"></textarea>
-      <input type="text" class="form-input contacts" placeholder="Контактные данные"/>
+      <textarea class="form-input comments" placeholder="Пожелания / комментарии" value="{{.readIndx.Comments}}"></textarea>
+      <input type="text" class="form-input contacts" placeholder="Контактные данные" value="{{.readIndx.Contacts}}"/>
     </div>
     <section class="list">
       {{ range .items }}
@@ -31,19 +31,17 @@
         <div class="row__content">
           <h3 class="row__title">{{.Text.Title }}</h3>
           
-          <a class="row__btn" href="/text/{{.Text.ID }}">Подробнее</a>
+          <a class="row__btn" href="/texts/{{.Text.ID }}">Подробнее</a>
         </div>
         
-        <a class="icon-btn" href="/readIndxs/remove/{{.Text.ID }}" title="Удалить">
-          <img src="http://localhost:9000/img/img/icon_trash.svg" width="22" height="22" alt="Удалить">
-        </a>
+       
         <div>
-          <input type="text" class="row__input" placeholder="Фога, SMOG, Флеша и т.п." />
+          <input type="text" class="row__input" placeholder="Фога, SMOG, Флеша и т.п." value="{{.Formula}}" />
         </div>
         <div class="total">
         <label for="textTotal" class="total__label">Индекс читабельности:</label>
         <br/>
-        <span id="textTotal" class="total__value">{{.IndexRead}}</span>
+        <span id="textTotal" class="total__value">{{.Calculation}}</span>
     
         </div>
       </article>
@@ -51,6 +49,15 @@
     </section>
     
     {{ end }}
+    <form action="/readIndxs" method="POST" class="add-form">
+        <input type="hidden" style="height: 0px;" name="id" value="{{.readIndx.ID}}">
+        <button type="submit" class="btn-delete">
+        <img src="http://localhost:9000/img/img/icon_trash.svg" alt="Удалить" />
+        <br>
+        <span>Удалить</span>
+        </button>
+
+    </form>
 
   </main>
   

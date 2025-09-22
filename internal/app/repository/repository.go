@@ -1,15 +1,24 @@
 package repository
 
 import (
-	"fmt"
-	"strings"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type Repository struct {
+	db *gorm.DB
 }
 
-func NewRepository() (*Repository, error) {
-	return &Repository{}, nil
+func NewRepository(dsn string) (*Repository, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{}) // подключаемся к БД
+	if err != nil {
+		return nil, err
+	}
+
+	// Возвращаем объект Repository с подключенной базой данных
+	return &Repository{
+		db: db,
+	}, nil
 }
 
 type Text struct { // вот наша новая структура
@@ -45,49 +54,4 @@ var ReadIndxsComponents = map[int]Calculation{
 			{Text: texts[1], IndexRead: 15},
 		},
 	},
-}
-
-func (r *Repository) GetTexts() ([]Text, error) {
-	// имитируем работу с БД. Типа мы выполнили sql запрос и получили эти строки из БД
-
-	// обязательно проверяем ошибки, и если они появились - передаем выше, то есть хендлеру
-	// тут я снова искусственно обработаю "ошибку" чисто чтобы показать вам как их передавать выше
-	if len(texts) == 0 {
-		return nil, fmt.Errorf("массив пустой")
-	}
-
-	return texts, nil
-}
-func (r *Repository) GetText(id int) (Text, error) {
-	// тут у вас будет логика получения нужной услуги, тоже наверное через цикл в первой лабе, и через запрос к БД начиная со второй
-	texts, err := r.GetTexts()
-	if err != nil {
-		return Text{}, err // тут у нас уже есть кастомная ошибка из нашего метода, поэтому мы можем просто вернуть ее
-	}
-
-	for _, text := range texts {
-		if text.ID == id {
-			return text, nil // если нашли, то просто возвращаем найденный заказ (услугу) без ошибок
-		}
-	}
-	return Text{}, fmt.Errorf("заказ не найден") // тут нужна кастомная ошибка, чтобы понимать на каком этапе возникла ошибка и что произошло
-}
-func (r *Repository) GetTextsByTitle(title string) ([]Text, error) {
-	texts, err := r.GetTexts()
-	if err != nil {
-		return []Text{}, err
-	}
-
-	var result []Text
-	for _, text := range texts {
-		if strings.Contains(strings.ToLower(text.Title), strings.ToLower(title)) {
-			result = append(result, text)
-		}
-	}
-
-	return result, nil
-}
-
-func (r *Repository) GetReadIndxsComponents(id int) (Calculation, error) {
-	return ReadIndxsComponents[id], nil
 }
