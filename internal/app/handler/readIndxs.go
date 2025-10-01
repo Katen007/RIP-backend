@@ -1,63 +1,100 @@
 package handler
 
 import (
-	"net/http"
-	"strconv"
+	"lab1_rip/internal/app/repository"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 )
 
-func (h *Handler) GetReadIndxs(ctx *gin.Context) {
-	//ids := getCartCopy()
-	// items := make([]repository.Order, 0, len(ids))
-	total := 0
-	idStr := ctx.Param("id")
-	id, err := strconv.Atoi(idStr)
+func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
+	uid := getUserID(c)
+	id, cnt, err := h.Repository.ReadIndxsCartIcon(uid)
 	if err != nil {
-		logrus.Error(err)
-	}
-	readIndex, err := h.Repository.GetReadIndxsById(id)
-	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		h.errorHandler(c, 500, err)
 		return
 	}
-
-	items, _ := h.Repository.GetTextsInReadIndxs(id)
-
-	ctx.HTML(http.StatusOK, "readIndxs.html", gin.H{
-		"readIndx": readIndex,
-		"total":    total,
-		"items":    items,
-	})
+	c.JSON(200, gin.H{"draft_readIndxs_id": id, "texts_count": cnt})
 }
 
-func (h *Handler) AddTextToReadIndxs(ctx *gin.Context) {
-	tId := ctx.PostForm("text_id")
-	textId, err := strconv.Atoi(tId)
-	if err != nil {
-		logrus.Error(err)
+func (h *Handler) API_ReadIndxsList(c *gin.Context) {
+	var q struct {
+		Status, DateFrom, DateTo string `form:"status,date_from,date_to"`
 	}
-	logrus.Info(textId)
-
-	if err := h.Repository.AddTextToReadIndxs(textId, 1); err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+	_ = c.ShouldBindQuery(&q)
+	var df, dt *time.Time
+	if q.DateFrom != "" {
+		t, _ := time.Parse("2006-01-02", q.DateFrom)
+		df = &t
+	}
+	if q.DateTo != "" {
+		t, _ := time.Parse("2006-01-02", q.DateTo)
+		dt = &t
+	}
+	data, err := h.Repository.ReadIndxsList(repository.ReadIndxsFilter{Status: q.Status, DateFrom: df, DateTo: dt})
+	if err != nil {
+		h.errorHandler(c, 500, err)
 		return
 	}
-	ctx.Redirect(http.StatusFound, "/texts")
+	c.JSON(200, data)
 }
 
-func (h *Handler) DeleteReadIndexs(ctx *gin.Context) {
-	idStr := ctx.PostForm("id")
-	id, err := strconv.Atoi(idStr)
+func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
+	id := mustIntParam(c, "id")
+	data, err := h.Repository.ReadIndxsGet(id)
 	if err != nil {
-		logrus.Error(err)
-		h.errorHandler(ctx, http.StatusBadRequest, err)
+		h.errorHandler(c, 404, err)
 		return
 	}
-	if err := h.Repository.DeleteReadIndxs(id); err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+	c.JSON(200, data)
+}
+
+func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
+	id := mustIntParam(c, "id")
+	var body map[string]any
+	if err := c.BindJSON(&body); err != nil {
+		h.errorHandler(c, 400, err)
 		return
 	}
-	ctx.Redirect(http.StatusFound, "/texts")
+	if err := h.Repository.ReadIndxsUpdateThematic(id, body); err != nil {
+		h.errorHandler(c, 500, err)
+		return
+	}
+	c.Status(204)
+}
+
+func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
+	id := mustIntParam(c, "id")
+	if err := h.Repository.ReadIndxsForm(id); err != nil {
+		h.errorHandler(c, 400, err)
+		return
+	}
+	c.Status(204)
+}
+
+func (h *Handler) API_ReadIndxsModerate(c *gin.Context) {
+	id := mustIntParam(c, "id")
+	uid := getUserID(c)
+	var body struct {
+		Action string `json:"action"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		h.errorHandler(c, 400, err)
+		return
+	}
+	data, err := h.Repository.ReadIndxsModerate(id, uid, body.Action)
+	if err != nil {
+		h.errorHandler(c, 400, err)
+		return
+	}
+	c.JSON(200, data)
+}
+
+func (h *Handler) API_ReadIndxsDelete(c *gin.Context) {
+	id := mustIntParam(c, "id")
+	if err := h.Repository.ReadIndxsSoftDelete(id); err != nil {
+		h.errorHandler(c, 500, err)
+		return
+	}
+	c.Status(204)
 }

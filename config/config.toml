@@ -1,2 +1,7 @@
 ServiceHost = "0.0.0.0"
 ServicePort = 8080
+MinioHost = "localhost"
+MinioPort = 9000
+MinioAccessKey = "minio"
+MinioSecretKey = "minio1234"
+MinioBucket = "img"

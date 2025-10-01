@@ -36,8 +36,8 @@ VALUES
 -- =======================
 -- Таблица read_indxs_to_text
 -- =======================
-INSERT INTO read_indxs_to_text (textid, readindxsid, formula)
+INSERT INTO read_indxs_to_texts (text_id, read_indxs_id, formula)
 VALUES
-(2, 1, 'Фога'),
+(1, 1, 'Фога'),
 (2, 1, 'SMOG'),
-(2, 1, 'Флеша');
+(3, 1, 'Флеша');

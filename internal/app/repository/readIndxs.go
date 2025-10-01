@@ -1,11 +1,135 @@
 package repository
 
 import (
+	"errors"
 	"lab1_rip/internal/app/ds"
+	"time"
 
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
+
+func (r *Repository) ReadIndxsCartIcon(userId int) (*int, int, error) {
+	var ri ds.ReadIndxs
+	if err := r.db.Where("creator_id = ? AND status = ?", userId, ds.StatusDraft).First(&ri).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, 0, nil
+		}
+		return nil, 0, err
+	}
+	var c int64
+	if err := r.db.Model(&ds.ReadIndxsToText{}).Where("read_indxs_id = ?", ri.ID).Count(&c).Error; err != nil {
+		return nil, 0, err
+	}
+	return &ri.ID, int(c), nil
+}
+
+type ReadIndxsFilter struct {
+	Status   string
+	DateFrom *time.Time
+	DateTo   *time.Time
+}
+
+func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
+	q := r.db.Preload("Creator").Preload("Moderator").
+		Where("status IN ?", []string{ds.StatusFormed, ds.StatusCompleted, ds.StatusRejected})
+	if f.Status != "" {
+		q = q.Where("status = ?", f.Status)
+	}
+	if f.DateFrom != nil {
+		q = q.Where("date_form::date >= ?", f.DateFrom.Format("2006-01-02"))
+	}
+	if f.DateTo != nil {
+		q = q.Where("date_form::date <= ?", f.DateTo.Format("2006-01-02"))
+	}
+	var res []ds.ReadIndxs
+	return res, q.Order("date_form desc nulls last").Find(&res).Error
+}
+
+func (r *Repository) ReadIndxsGet(id int) (ds.ReadIndxs, error) {
+	var ri ds.ReadIndxs
+	res := r.db.Preload("Creator").Preload("Moderator").
+		Preload("ReadIndxsToTexts.Text").Where("id = ? AND status != ?", id, ds.StatusDeleted).
+		Find(&ri)
+	return ri, res.Error
+}
+
+func (r *Repository) ReadIndxsUpdateThematic(id int, fields map[string]any) error {
+	// защищаем системные поля
+	for _, k := range []string{"id", "status", "creator_id", "moderator_id", "date_create", "date_form", "date_end"} {
+		delete(fields, k)
+	}
+	return r.db.Model(&ds.ReadIndxs{}).Where("id = ?", id).Updates(fields).Error
+}
+
+func (r *Repository) ReadIndxsForm(id int) error {
+	var ri ds.ReadIndxs
+	if err := r.db.First(&ri, id).Error; err != nil {
+		return err
+	}
+	if ri.Status != ds.StatusDraft {
+		return errors.New("only DRAFT can be formed")
+	}
+
+	var cnt int64
+	if err := r.db.Model(&ds.ReadIndxsToText{}).Where("read_indxs_id = ?", id).Count(&cnt).Error; err != nil {
+		return err
+	}
+	if ri.Contacts == "" || cnt == 0 {
+		return errors.New("contacts and at least one text are required")
+	}
+
+	return r.db.Model(&ds.ReadIndxs{}).Where("id = ?", id).
+		Updates(map[string]any{"status": ds.StatusFormed, "date_form": time.Now()}).Error
+}
+
+func (r *Repository) ReadIndxsModerate(id, moderatorID int, action string) (ds.ReadIndxs, error) {
+	var ri ds.ReadIndxs
+	if err := r.db.Preload("ReadIndxsToTexts.Text").First(&ri, id).Error; err != nil {
+		return ds.ReadIndxs{}, err
+	}
+	if ri.Status != ds.StatusFormed {
+		return ds.ReadIndxs{}, errors.New("only FORMED can be moderated")
+	}
+
+	// вычисления в m-m: по Formula заполняем Calculation
+	for _, it := range ri.ReadIndxsToTexts {
+		calc := 1
+		switch it.Formula {
+		case "FLESCH":
+			calc = 70 // заглушки; подставь реальные функции
+		case "FOG":
+			calc = 12
+		case "SMOG":
+			calc = 10
+		}
+		_ = r.db.Model(&ds.ReadIndxsToText{}).
+			Where("read_indxs_id = ? AND text_id = ?", id, it.TextID).
+			Update("calculation", calc).Error
+	}
+
+	newStatus := ds.StatusCompleted
+	if action == "reject" {
+		newStatus = ds.StatusRejected
+	}
+
+	if err := r.db.Model(&ds.ReadIndxs{}).Where("id = ?", id).
+		Updates(map[string]any{
+			"status":       newStatus,
+			"moderator_id": moderatorID,
+			"date_end":     time.Now(),
+		}).Error; err != nil {
+		return ds.ReadIndxs{}, err
+	}
+
+	return r.ReadIndxsGet(id)
+}
+
+func (r *Repository) ReadIndxsSoftDelete(id int) error {
+	return r.db.Model(&ds.ReadIndxs{}).
+		Where("id = ? AND status <> ?", id, ds.StatusDeleted).
+		Update("status", ds.StatusDeleted).Error
+}
 
 func (r *Repository) GetCurrentReadIndxs(userId int) (ds.ReadIndxs, error) {
 	exist_calc, findErr := r.GetReadIndxs(userId)
@@ -70,46 +194,6 @@ func (r *Repository) AddTextToReadIndxs(textID int, userId int) error {
 	}
 	err = r.db.Create(&textToReadIndxs).Error
 	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *Repository) GetTextsInReadIndxs(readIndxsID int) ([]ds.ReadIndxsToText, error) {
-	var readIndxs ds.ReadIndxs
-	err := r.db.Preload("ReadIndxsToTexts.Text").First(&readIndxs, readIndxsID).Error
-	if err != nil {
-		return nil, err
-	}
-	items := readIndxs.ReadIndxsToTexts
-	return items, nil
-}
-
-func (r *Repository) GetCountTexts(userId int) (int, error) {
-	readIndxs, err := r.GetReadIndxs(userId)
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return 0, nil
-		}
-		return 0, err
-	}
-
-	var count int64
-	err = r.db.Model(&ds.ReadIndxsToText{}).
-		Where("read_indxs_id = ?", readIndxs.ID).
-		Count(&count).Error
-	if err != nil {
-		return 0, err
-	}
-	return int(count), nil
-}
-
-func (r *Repository) DeleteReadIndxs(readIndxsId int) error {
-	var err error
-	var ids []int
-	query := "UPDATE read_indxs SET status=$1 WHERE id = $2 AND status!=$1"
-	res := r.db.Raw(query, "DELETED", readIndxsId).Scan(&ids)
-	if err = res.Error; err != nil {
 		return err
 	}
 	return nil

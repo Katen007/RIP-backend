@@ -23,7 +23,7 @@ func main() {
 	postgresString := dsn.FromEnv()
 	fmt.Println(postgresString)
 
-	rep, errRep := repository.NewRepository(postgresString)
+	rep, errRep := repository.NewRepository(postgresString, conf)
 	if errRep != nil {
 		logrus.Fatalf("error initializing repository: %v", errRep)
 	}
