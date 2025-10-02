@@ -1,10 +1,7 @@
 package handler
 
 import (
-	"fmt"
 	"lab1_rip/internal/app/ds"
-	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,7 +55,21 @@ func (h *Handler) API_TextUpdate(c *gin.Context) {
 }
 func (h *Handler) API_TextDelete(c *gin.Context) {
 	id := mustIntParam(c, "id")
+	if c.IsAborted() {
+		return
+	}
+	text, err := h.Repository.TextByID(id)
+	if err != nil {
+		h.errorHandler(c, 400, err)
+		return
+	}
+	imgUrl := text.ImageURL
 	if err := h.Repository.TextSoftDelete(id); err != nil {
+		h.errorHandler(c, 500, err)
+		return
+	}
+	err = h.Repository.DeleteComponentImg(c, &imgUrl)
+	if err != nil {
 		h.errorHandler(c, 500, err)
 		return
 	}
@@ -69,18 +80,13 @@ func (h *Handler) API_TextUploadImage(c *gin.Context) {
 	if c.IsAborted() {
 		return
 	}
-	contentType := c.Request.Header.Get("Content-Type")
-	if contentType == "" {
-		contentType = "application/octet-stream"
-	}
-	contentLengthStr := c.Request.Header.Get("Content-Length")
-	if contentLengthStr == "" {
-		h.errorHandler(c, http.StatusBadRequest, fmt.Errorf("content-Length header is required"))
+	fileSize, contentType := h.fileParams(c)
+	if c.IsAborted() {
 		return
 	}
-	fileSize, err := strconv.ParseInt(contentLengthStr, 10, 64)
+	text, err := h.Repository.TextByID(id)
 	if err != nil {
-		h.errorHandler(c, http.StatusBadRequest, fmt.Errorf("invalid Content-Length header"))
+		h.errorHandler(c, 400, err)
 		return
 	}
 
@@ -92,6 +98,9 @@ func (h *Handler) API_TextUploadImage(c *gin.Context) {
 		h.errorHandler(c, 500, err)
 		return
 	}
+	if text.ImageURL != "" {
+		h.Repository.DeleteComponentImg(c, &text.ImageURL)
+	}
 	if err := h.Repository.TextUpdateImageKey(id, &url); err != nil {
 		h.errorHandler(c, 500, err)
 		return
@@ -101,7 +110,7 @@ func (h *Handler) API_TextUploadImage(c *gin.Context) {
 func (h *Handler) API_TextAddToDraft(c *gin.Context) {
 	textID := mustIntParam(c, "id")
 	if err := h.Repository.AddTextToReadIndxs(textID, getUserID(c)); err != nil {
-		h.errorHandler(c, 500, err)
+		h.errorHandler(c, 400, err)
 		return
 	}
 	c.Status(204)

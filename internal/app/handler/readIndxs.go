@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
@@ -19,10 +20,12 @@ func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 
 func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 	var q struct {
-		Status, DateFrom, DateTo string `form:"status,date_from,date_to"`
+		Status   string `form:"status"`
+		DateFrom string `form:"date_from"`
+		DateTo   string `form:"date_to"`
 	}
 	_ = c.ShouldBindQuery(&q)
-	var df, dt *time.Time
+	var df, dt *time.Time = nil, nil
 	if q.DateFrom != "" {
 		t, _ := time.Parse("2006-01-02", q.DateFrom)
 		df = &t
@@ -31,6 +34,7 @@ func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 		t, _ := time.Parse("2006-01-02", q.DateTo)
 		dt = &t
 	}
+	logrus.Info(df, dt, q.DateFrom)
 	data, err := h.Repository.ReadIndxsList(repository.ReadIndxsFilter{Status: q.Status, DateFrom: df, DateTo: dt})
 	if err != nil {
 		h.errorHandler(c, 500, err)

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"lab1_rip/internal/app/repository"
 	"net/http"
 	"strconv"
@@ -41,8 +42,14 @@ func (h *Handler) RegisterAPI(r *gin.Engine) {
 	api.DELETE("/readindxs/:id", h.API_ReadIndxsDelete)
 
 	// m-m
-	api.PUT("/readindxs-texts", h.API_ReadIndxsTextsUpdate)
-	api.DELETE("/readindxs-texts", h.API_ReadIndxsTextsDelete)
+	api.PUT("/readindxs-texts/:id/texts/:text_id", h.API_ReadIndxsTextsUpdate)
+	api.DELETE("/readindxs-texts/:id/texts/:text_id", h.API_ReadIndxsTextsDelete)
+
+	api.POST("/users/register", h.API_UserRegister)
+	api.POST("/auth/login", h.API_AuthLogin)
+	api.POST("/auth/logout", h.API_AuthLogout) // можно и без мидлвари
+	api.GET("/users/me", h.API_UserMe)
+	api.PUT("/users/me", h.API_UserUpdateMe)
 }
 
 // errorHandler для более удобного вывода ошибок
@@ -52,6 +59,7 @@ func (h *Handler) errorHandler(ctx *gin.Context, errorStatusCode int, err error)
 		"status":      "error",
 		"description": err.Error(),
 	})
+	ctx.Abort()
 }
 func mustIntParam(c *gin.Context, name string) int {
 	raw := c.Param(name)
@@ -64,4 +72,22 @@ func mustIntParam(c *gin.Context, name string) int {
 		return 0
 	}
 	return id
+}
+
+func (h *Handler) fileParams(c *gin.Context) (int64, string) {
+	contentType := c.Request.Header.Get("Content-Type")
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	contentLengthStr := c.Request.Header.Get("Content-Length")
+	if contentLengthStr == "" {
+		h.errorHandler(c, http.StatusBadRequest, fmt.Errorf("content-Length header is required"))
+		return 0, ""
+	}
+	fileSize, err := strconv.ParseInt(contentLengthStr, 10, 64)
+	if err != nil {
+		h.errorHandler(c, http.StatusBadRequest, fmt.Errorf("invalid Content-Length header"))
+		return 0, ""
+	}
+	return fileSize, contentType
 }

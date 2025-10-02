@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"lab1_rip/internal/app/ds"
 	"time"
 
@@ -31,7 +32,7 @@ type ReadIndxsFilter struct {
 }
 
 func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
-	q := r.db.Preload("Creator").Preload("Moderator").
+	q := r.db.Model(ds.ReadIndxs{}).Preload("Creator").Preload("Moderator").
 		Where("status IN ?", []string{ds.StatusFormed, ds.StatusCompleted, ds.StatusRejected})
 	if f.Status != "" {
 		q = q.Where("status = ?", f.Status)
@@ -43,14 +44,17 @@ func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
 		q = q.Where("date_form::date <= ?", f.DateTo.Format("2006-01-02"))
 	}
 	var res []ds.ReadIndxs
-	return res, q.Order("date_form desc nulls last").Find(&res).Error
+	return res, q.Find(&res).Error
 }
 
 func (r *Repository) ReadIndxsGet(id int) (ds.ReadIndxs, error) {
 	var ri ds.ReadIndxs
 	res := r.db.Preload("Creator").Preload("Moderator").
-		Preload("ReadIndxsToTexts.Text").Where("id = ? AND status != ?", id, ds.StatusDeleted).
+		Preload("ReadIndxsToTexts.Text").Where("id = ? AND status <> ?", id, ds.StatusDeleted).
 		Find(&ri)
+	if res.RowsAffected == 0 {
+		return ri, gorm.ErrRecordNotFound
+	}
 	return ri, res.Error
 }
 
@@ -182,7 +186,7 @@ func (r *Repository) AddTextToReadIndxs(textID int, userId int) error {
 	logrus.Error(textID, readIndxs.ID)
 	if check.Error == nil {
 		logrus.Error("not em")
-		return nil
+		return fmt.Errorf("record already exist")
 	}
 	if check.Error != nil && check.Error != gorm.ErrRecordNotFound {
 		return check.Error

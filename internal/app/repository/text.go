@@ -35,6 +35,7 @@ func (r *Repository) TextSoftDelete(id int) error {
 	if res.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
+
 	return res.Error
 }
 func (r *Repository) TextUpdateImageKey(id int, key *string) error {

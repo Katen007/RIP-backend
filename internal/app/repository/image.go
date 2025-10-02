@@ -28,19 +28,19 @@ func (r *Repository) UploadComponentImg(ctx context.Context, file io.Reader, fil
 	return fmt.Sprintf("http://%v:%v/%v/%v", r.minio.Config.MinioHost, r.minio.Config.MinioPort, r.minio.Config.MinioBucket, filePath), nil
 }
 
-func (r *Repository) DeleteComponentImg(ctx context.Context, filePath string) error {
-	err := r.minio.Client.RemoveObject(context.Background(), r.minio.Config.MinioBucket, filePath, minio.RemoveObjectOptions{})
+func (r *Repository) DeleteComponentImg(ctx context.Context, url *string) error {
+	filePath, err := r.GetUrlComponentImg(url)
+	if err != nil {
+		return err
+	}
+	err = r.minio.Client.RemoveObject(context.Background(), r.minio.Config.MinioBucket, filePath, minio.RemoveObjectOptions{})
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (r *Repository) GetUrlComponentImg(componentId uint) (string, error) {
-	component, err := r.TextByID(int(componentId))
-	if err != nil {
-		return "", err
-	}
-	url := component.ImageURL
+func (r *Repository) GetUrlComponentImg(urlPtr *string) (string, error) {
+	url := *urlPtr
 	if url == "" {
 		return "", nil
 	}
