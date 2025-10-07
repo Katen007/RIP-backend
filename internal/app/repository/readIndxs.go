@@ -13,9 +13,6 @@ import (
 func (r *Repository) ReadIndxsCartIcon(userId int) (*int, int, error) {
 	var ri ds.ReadIndxs
 	if err := r.db.Where("creator_id = ? AND status = ?", userId, ds.StatusDraft).First(&ri).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return nil, 0, nil
-		}
 		return nil, 0, err
 	}
 	var c int64
@@ -59,7 +56,6 @@ func (r *Repository) ReadIndxsGet(id int) (ds.ReadIndxs, error) {
 }
 
 func (r *Repository) ReadIndxsUpdateThematic(id int, fields map[string]any) error {
-	// защищаем системные поля
 	for _, k := range []string{"id", "status", "creator_id", "moderator_id", "date_create", "date_form", "date_end"} {
 		delete(fields, k)
 	}
@@ -98,15 +94,7 @@ func (r *Repository) ReadIndxsModerate(id, moderatorID int, action string) (ds.R
 
 	// вычисления в m-m: по Formula заполняем Calculation
 	for _, it := range ri.ReadIndxsToTexts {
-		calc := 1
-		switch it.Formula {
-		case "FLESCH":
-			calc = 70 // заглушки; подставь реальные функции
-		case "FOG":
-			calc = 12
-		case "SMOG":
-			calc = 10
-		}
+		calc := calcFlesch(it.CountWords, it.CountSentences, it.CountSyllables)
 		_ = r.db.Model(&ds.ReadIndxsToText{}).
 			Where("read_indxs_id = ? AND text_id = ?", id, it.TextID).
 			Update("calculation", calc).Error
@@ -136,7 +124,8 @@ func (r *Repository) ReadIndxsSoftDelete(id int) error {
 }
 
 func (r *Repository) GetCurrentReadIndxs(userId int) (ds.ReadIndxs, error) {
-	exist_calc, findErr := r.GetReadIndxs(userId)
+	var exist_calc ds.ReadIndxs
+	findErr := r.db.Where("creator_id = ? AND status = ?", userId, ds.StatusDraft).First(&exist_calc).Error
 	if findErr != nil {
 		if findErr == gorm.ErrRecordNotFound {
 			return r.CreateReadIndxs(userId)
@@ -180,7 +169,6 @@ func (r *Repository) AddTextToReadIndxs(textID int, userId int) error {
 	if err != nil {
 		return err
 	}
-
 	var existing ds.ReadIndxsToText
 	check := r.db.Where("text_id = ? AND read_indxs_id = ?", textID, readIndxs.ID).First(&existing)
 	logrus.Error(textID, readIndxs.ID)

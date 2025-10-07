@@ -86,8 +86,6 @@ func (h *Handler) API_UserMe(c *gin.Context) {
 	})
 }
 
-// PUT /api/users/me
-// { "login":"newname", "password":"newpass" }
 func (h *Handler) API_UserUpdateMe(c *gin.Context) {
 	uid_, ok := c.Get("user_id")
 	uid := uid_.(int)

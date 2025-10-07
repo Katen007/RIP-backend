@@ -33,7 +33,7 @@ func (h *Handler) RegisterAPI(r *gin.Engine) {
 	api.POST("/texts/:id/add-to-draft", h.API_TextAddToDraft)
 
 	// ReadIndxs (заявки)
-	api.GET("/readindxs/cart-icon", h.API_ReadIndxsCartIcon)
+	api.GET("/readindxs/my-text-cart", h.API_ReadIndxsCartIcon)
 	api.GET("/readindxs", h.API_ReadIndxsList)
 	api.GET("/readindxs/:id", h.API_ReadIndxsGet)
 	api.PUT("/readindxs/:id", h.API_ReadIndxsUpdate)
@@ -42,8 +42,8 @@ func (h *Handler) RegisterAPI(r *gin.Engine) {
 	api.DELETE("/readindxs/:id", h.API_ReadIndxsDelete)
 
 	// m-m
-	api.PUT("/readindxs-texts/:id/texts/:text_id", h.API_ReadIndxsTextsUpdate)
-	api.DELETE("/readindxs-texts/:id/texts/:text_id", h.API_ReadIndxsTextsDelete)
+	api.PUT("/readindxs-texts/", h.API_ReadIndxsTextsUpdate)
+	api.DELETE("/readindxs-texts/", h.API_ReadIndxsTextsDelete)
 
 	api.POST("/users/register", h.API_UserRegister)
 	api.POST("/auth/login", h.API_AuthLogin)

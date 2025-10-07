@@ -13,7 +13,8 @@ func (h *Handler) API_TextsList(c *gin.Context) {
 		h.errorHandler(c, 500, err)
 		return
 	}
-	c.JSON(200, data)
+	textDto := ds.ToTextsListDTO(data)
+	c.JSON(200, textDto)
 }
 func (h *Handler) API_TextGet(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -22,7 +23,8 @@ func (h *Handler) API_TextGet(c *gin.Context) {
 		h.errorHandler(c, 404, err)
 		return
 	}
-	c.JSON(200, data)
+	textDto := ds.ToTextDTO(data)
+	c.JSON(200, textDto)
 }
 func (h *Handler) API_TextCreate(c *gin.Context) {
 	var dto struct {
@@ -109,7 +111,11 @@ func (h *Handler) API_TextUploadImage(c *gin.Context) {
 }
 func (h *Handler) API_TextAddToDraft(c *gin.Context) {
 	textID := mustIntParam(c, "id")
-	if err := h.Repository.AddTextToReadIndxs(textID, getUserID(c)); err != nil {
+	userID := getUserID(c)
+	if c.IsAborted() {
+		return
+	}
+	if err := h.Repository.AddTextToReadIndxs(textID, userID); err != nil {
 		h.errorHandler(c, 400, err)
 		return
 	}

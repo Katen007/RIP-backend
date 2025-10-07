@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"lab1_rip/internal/app/repository"
 	"time"
 
@@ -10,9 +11,13 @@ import (
 
 func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 	uid := getUserID(c)
+	if c.IsAborted() {
+		h.errorHandler(c, 400, fmt.Errorf("invalid user id"))
+		return
+	}
 	id, cnt, err := h.Repository.ReadIndxsCartIcon(uid)
 	if err != nil {
-		h.errorHandler(c, 500, err)
+		h.errorHandler(c, 400, err)
 		return
 	}
 	c.JSON(200, gin.H{"draft_readIndxs_id": id, "texts_count": cnt})

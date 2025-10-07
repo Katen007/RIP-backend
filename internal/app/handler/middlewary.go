@@ -12,5 +12,6 @@ func getUserID(c *gin.Context) int {
 	if id, ok := v.(int); ok {
 		return id
 	}
-	return 1
+	c.Abort()
+	return 0
 }

@@ -7,50 +7,48 @@ import (
 )
 
 type mmBody struct {
-	Calculation *int    `json:"calculation"`
-	Formula     *string `json:"formula"`
+	ReadIndxsID    int  `json:"read_indxs_id" binding:"required"`
+	TextID         int  `json:"text_id"      binding:"required"`
+	CountWords     *int `json:"count_words"`
+	CountSentences *int `json:"count_sentences"`
+	CountSyllables *int `json:"count_syllables"`
 }
 
 func (h *Handler) API_ReadIndxsTextsUpdate(c *gin.Context) {
-	var read_indx_id, text_id int
-	read_indx_id = mustIntParam(c, "id")
-	if c.IsAborted() {
-		return
-	}
-	text_id = mustIntParam(c, "text_id")
-	if c.IsAborted() {
-		return
-	}
 	var b mmBody
-	if err := c.BindJSON(&b); err != nil {
+	if err := c.ShouldBindJSON(&b); err != nil {
 		h.errorHandler(c, 400, err)
 		return
 	}
-	m := map[string]any{}
-	if b.Calculation != nil {
-		m["calculation"] = *b.Calculation
+	f := map[string]any{}
+	if b.CountWords != nil {
+		f["count_words"] = *b.CountWords
 	}
-	if b.Formula != nil {
-		m["formula"] = *b.Formula
+	if b.CountSentences != nil {
+		f["count_sentences"] = *b.CountSentences
 	}
-	if err := h.Repository.ReadIndxsTextsUpdate(read_indx_id, text_id, m); err != nil {
-		h.errorHandler(c, 400, err)
+	if b.CountSyllables != nil {
+		f["count_syllables"] = *b.CountSyllables
+	}
+	if err := h.Repository.ReadIndxsTextsUpdate(b.ReadIndxsID, b.TextID, f); err != nil {
+		h.errorHandler(c, 500, err)
 		return
 	}
-	c.Status(http.StatusNoContent)
+	c.Status(204)
+}
+
+type mmBodyDelete struct {
+	ReadIndxsID int `json:"read_indxs_id" binding:"required"`
+	TextID      int `json:"text_id"      binding:"required"`
 }
 
 func (h *Handler) API_ReadIndxsTextsDelete(c *gin.Context) {
-	var read_indx_id, text_id int
-	read_indx_id = mustIntParam(c, "id")
-	if c.IsAborted() {
+	var b mmBodyDelete
+	if err := c.ShouldBindJSON(&b); err != nil {
+		h.errorHandler(c, 400, err)
 		return
 	}
-	text_id = mustIntParam(c, "text_id")
-	if c.IsAborted() {
-		return
-	}
-	if err := h.Repository.ReadIndxsTextsDelete(read_indx_id, text_id); err != nil {
+	if err := h.Repository.ReadIndxsTextsDelete(b.ReadIndxsID, b.TextID); err != nil {
 		h.errorHandler(c, 500, err)
 		return
 	}
