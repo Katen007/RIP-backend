@@ -19,7 +19,11 @@ func (h *Handler) GetReadIndxs(ctx *gin.Context) {
 	}
 	readIndex, err := h.Repository.GetReadIndxsById(id)
 	if err != nil {
-		h.errorHandler(ctx, http.StatusInternalServerError, err)
+		ctx.HTML(http.StatusOK, "readIndxs.html", gin.H{
+			"readIndx": nil,
+			"total":    0,
+			"items":    nil,
+		})
 		return
 	}
 
