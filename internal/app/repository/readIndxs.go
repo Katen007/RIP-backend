@@ -13,10 +13,16 @@ import (
 func (r *Repository) ReadIndxsCartIcon(userId int) (*int, int, error) {
 	var ri ds.ReadIndxs
 	if err := r.db.Where("creator_id = ? AND status = ?", userId, ds.StatusDraft).First(&ri).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, 0, nil
+		}
 		return nil, 0, err
 	}
 	var c int64
 	if err := r.db.Model(&ds.ReadIndxsToText{}).Where("read_indxs_id = ?", ri.ID).Count(&c).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, 0, nil
+		}
 		return nil, 0, err
 	}
 	return &ri.ID, int(c), nil
@@ -29,7 +35,7 @@ type ReadIndxsFilter struct {
 }
 
 func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
-	q := r.db.Model(ds.ReadIndxs{}).Preload("Creator").Preload("Moderator").
+	q := r.db.Model(ds.ReadIndxs{}).Preload("Creator").Preload("Moderator").Preload("ReadIndxsToTexts.Text").
 		Where("status IN ?", []string{ds.StatusFormed, ds.StatusCompleted, ds.StatusRejected})
 	if f.Status != "" {
 		q = q.Where("status = ?", f.Status)

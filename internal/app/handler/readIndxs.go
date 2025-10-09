@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"lab1_rip/internal/app/ds"
 	"lab1_rip/internal/app/repository"
 	"time"
 
@@ -41,11 +42,12 @@ func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 	}
 	logrus.Info(df, dt, q.DateFrom)
 	data, err := h.Repository.ReadIndxsList(repository.ReadIndxsFilter{Status: q.Status, DateFrom: df, DateTo: dt})
+	dto := ds.ToReadIndxsListDTO(data)
 	if err != nil {
 		h.errorHandler(c, 500, err)
 		return
 	}
-	c.JSON(200, data)
+	c.JSON(200, dto)
 }
 
 func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
@@ -55,7 +57,8 @@ func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
 		h.errorHandler(c, 404, err)
 		return
 	}
-	c.JSON(200, data)
+	dto := ds.ToReadIndxsInfoDTO(data)
+	c.JSON(200, dto)
 }
 
 func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
