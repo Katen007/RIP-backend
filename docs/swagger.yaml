@@ -1,0 +1,731 @@
+basePath: /api
+definitions:
+  ds.User:
+    properties:
+      id:
+        type: integer
+      is_moderator:
+        type: boolean
+      login:
+        type: string
+    type: object
+  handler.CartIconResponse:
+    properties:
+      draft_readIndxs_id:
+        type: integer
+      texts_count:
+        type: integer
+    type: object
+  handler.ErrorResponse:
+    properties:
+      description:
+        type: string
+      status:
+        type: string
+    type: object
+  handler.ReadIndxsInfoResponse:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/handler.TextDTO'
+        type: array
+      thematic: {}
+    type: object
+  handler.ReadIndxsListItem:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      status:
+        type: string
+      texts_count:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  handler.ReadIndxsListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/handler.ReadIndxsListItem'
+        type: array
+    type: object
+  handler.ReadIndxsModerateRequest:
+    properties:
+      action:
+        type: string
+    type: object
+  handler.ReadIndxsModerateResponse:
+    properties:
+      id:
+        type: integer
+      status:
+        type: string
+    type: object
+  handler.TextCreateRequest:
+    properties:
+      description:
+        type: string
+      price:
+        type: integer
+      title:
+        type: string
+    type: object
+  handler.TextDTO:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      image_url:
+        type: string
+      price:
+        type: integer
+      title:
+        type: string
+    type: object
+  handler.TextUpdateRequest:
+    additionalProperties: {}
+    type: object
+  handler.UserCredentials:
+    properties:
+      login:
+        description: 'required: true'
+        type: string
+      password:
+        description: 'required: true'
+        type: string
+    type: object
+  handler.mmBody:
+    properties:
+      count_sentences:
+        type: integer
+      count_syllables:
+        type: integer
+      count_words:
+        type: integer
+      read_indxs_id:
+        description: 'required: true'
+        type: integer
+      text_id:
+        description: 'required: true'
+        type: integer
+    required:
+    - read_indxs_id
+    - text_id
+    type: object
+  handler.mmBodyDelete:
+    properties:
+      read_indxs_id:
+        description: 'required: true'
+        type: integer
+      text_id:
+        description: 'required: true'
+        type: integer
+    required:
+    - read_indxs_id
+    - text_id
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: This is a sample server celler server.
+  license:
+    name: MIT
+  termsOfService: http://swagger.io/terms/
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Логин
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok=true
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Логин
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      parameters:
+      - description: Логаут
+        in: body
+        name: body
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok=true
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+      summary: Логаут
+      tags:
+      - auth
+  /readindxs:
+    get:
+      parameters:
+      - description: status filter
+        in: query
+        name: status
+        type: string
+      - description: YYYY-MM-DD
+        in: query
+        name: date_from
+        type: string
+      - description: YYYY-MM-DD
+        in: query
+        name: date_to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ReadIndxsListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: List read indices
+      tags:
+      - readindxs
+  /readindxs-texts:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: text delete payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.mmBodyDelete'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove text from read index
+      tags:
+      - read-indxs
+    patch:
+      consumes:
+      - application/json
+      description: Partial update of word/sentence/syllable counters for specific
+        text in a read index
+      parameters:
+      - description: metrics payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.mmBody'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update text metrics in read index
+      tags:
+      - read-indxs
+  /readindxs/{id}:
+    delete:
+      parameters:
+      - description: ReadIndxs ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Soft delete read index
+      tags:
+      - readindxs
+    get:
+      parameters:
+      - description: ReadIndxs ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ReadIndxsInfoResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get read index by id
+      tags:
+      - readindxs
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: ReadIndxs ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: fields to update
+        in: body
+        name: body
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update read index (partial)
+      tags:
+      - readindxs
+  /readindxs/{id}/form:
+    post:
+      parameters:
+      - description: ReadIndxs ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Build/form read index
+      tags:
+      - readindxs
+  /readindxs/{id}/moderate:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: ReadIndxs ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: action payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ReadIndxsModerateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ReadIndxsModerateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Moderate read index
+      tags:
+      - readindxs
+  /readindxs/my-text-cart:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.CartIconResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Read indices cart icon info
+      tags:
+      - readindxs
+  /texts:
+    get:
+      parameters:
+      - description: title contains
+        in: query
+        name: title
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.TextDTO'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: List texts
+      tags:
+      - texts
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: new text payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.TextCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.TextDTO'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Create text
+      tags:
+      - texts
+  /texts/{id}:
+    delete:
+      parameters:
+      - description: Text ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Soft delete text
+      tags:
+      - texts
+    get:
+      parameters:
+      - description: Text ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.TextDTO'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Get text by id
+      tags:
+      - texts
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Text ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: fields to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.TextUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Update text (partial)
+      tags:
+      - texts
+  /texts/{id}/add-to-draft:
+    post:
+      parameters:
+      - description: textID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Добавить текст в черновик индексов пользователя
+      tags:
+      - texts
+  /texts/{id}/image:
+    post:
+      consumes:
+      - application/octet-stream
+      parameters:
+      - description: Text ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'raw binary image (Content-Type: image/*)'
+        in: body
+        name: file
+        required: true
+        schema:
+          items:
+            type: integer
+          type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: image_key
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ErrorResponse'
+      summary: Upload text image
+      tags:
+      - texts
+  /users/me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.User'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Текущий пользователь
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Новые поля
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserCredentials'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/ds.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Обновить свои данные
+      tags:
+      - users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Регистрация
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UserCredentials'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/ds.User'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: login already taken
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Регистрация пользователя
+      tags:
+      - auth
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

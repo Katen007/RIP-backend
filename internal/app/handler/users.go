@@ -8,8 +8,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// POST /api/users/register
-// { "login":"user1", "password":"pass", "isModerator": false }
+// API_UserRegister godoc
+// @Summary      Регистрация пользователя
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      UserCredentials  true  "Регистрация"
+// @Success      201   {object}  ds.User
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      409   {object}  map[string]interface{}  "login already taken"
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /users/register [post]
 func (h *Handler) API_UserRegister(c *gin.Context) {
 	var in struct {
 		Login       string `json:"login" binding:"required,min=3,max=25"`
@@ -40,8 +49,16 @@ func (h *Handler) API_UserRegister(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"id": u.ID, "login": u.Login, "isModerator": u.IsModerator})
 }
 
-// POST /api/auth/login
-// { "login":"user1", "password":"pass" }
+// API_AuthLogin godoc
+// @Summary      Логин
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      UserCredentials  true  "Логин"
+// @Success      200   {object}  map[string]bool  "ok=true"
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      401   {object}  map[string]interface{}
+// @Router       /auth/login [post]
 func (h *Handler) API_AuthLogin(c *gin.Context) {
 	var in struct {
 		Login    string `json:"login" binding:"required"`
@@ -63,12 +80,24 @@ func (h *Handler) API_AuthLogin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
-// POST /api/auth/logout
+// API_AuthLogout godoc
+// @Summary      Логаут
+// @Tags         auth
+// @Produce      json
+// @Param        body  body      nil  false  "Логаут"
+// @Success      200  {object}  map[string]bool  "ok=true"
+// @Router       /auth/logout [post]
 func (h *Handler) API_AuthLogout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
-// GET /api/users/me
+// API_UserMe godoc
+// @Summary      Текущий пользователь
+// @Tags         users
+// @Produce      json
+// @Success      200  {object}  ds.User
+// @Failure      401  {object}  map[string]interface{}
+// @Router       /users/me [get]
 func (h *Handler) API_UserMe(c *gin.Context) {
 	uid_, ok := c.Get("user_id")
 	uid := uid_.(int)
@@ -86,6 +115,17 @@ func (h *Handler) API_UserMe(c *gin.Context) {
 	})
 }
 
+// API_UserUpdateMe godoc
+// @Summary      Обновить свои данные
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Param        body  body      UserCredentials  true  "Новые поля"
+// @Success      200   {object}  ds.User
+// @Failure      400   {object}  map[string]interface{}
+// @Failure      401   {object}  map[string]interface{}
+// @Failure      500   {object}  map[string]interface{}
+// @Router       /users/me [patch]
 func (h *Handler) API_UserUpdateMe(c *gin.Context) {
 	uid_, ok := c.Get("user_id")
 	uid := uid_.(int)

@@ -10,6 +10,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// API_ReadIndxsCartIcon возвращает текущий draft и число текстов.
+// @Summary      Read indices cart icon info
+// @Tags         readindxs
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Success      200  {object}  CartIconResponse
+// @Failure      400  {object}  ErrorResponse
+// @Router       /readindxs/my-text-cart [get]
 func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 	uid := getUserID(c)
 	if c.IsAborted() {
@@ -24,6 +32,17 @@ func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 	c.JSON(200, gin.H{"draft_readIndxs_id": id, "texts_count": cnt})
 }
 
+// API_ReadIndxsList список индексов с фильтрами.
+// @Summary      List read indices
+// @Tags         readindxs
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        status     query     string false "status filter"
+// @Param        date_from  query     string false "YYYY-MM-DD"
+// @Param        date_to    query     string false "YYYY-MM-DD"
+// @Success      200  {object}  ReadIndxsListResponse
+// @Failure      500  {object}  ErrorResponse
+// @Router       /readindxs [get]
 func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 	var q struct {
 		Status   string `form:"status"`
@@ -50,6 +69,15 @@ func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 	c.JSON(200, dto)
 }
 
+// API_ReadIndxsGet получить индекс по id.
+// @Summary      Get read index by id
+// @Tags         readindxs
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        id   path  int  true  "ReadIndxs ID"
+// @Success      200  {object}  ReadIndxsInfoResponse
+// @Failure      404  {object}  ErrorResponse
+// @Router       /readindxs/{id} [get]
 func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	data, err := h.Repository.ReadIndxsGet(id)
@@ -61,6 +89,18 @@ func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
 	c.JSON(200, dto)
 }
 
+// API_ReadIndxsUpdate частичное обновление тематик/полей индекса.
+// @Summary      Update read index (partial)
+// @Tags         readindxs
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        id    path  int   true  "ReadIndxs ID"
+// @Param        body  body  map[string]any true "fields to update"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {object}  ErrorResponse
+// @Failure      500   {object}  ErrorResponse
+// @Router       /readindxs/{id} [patch]
 func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	var body map[string]any
@@ -75,6 +115,15 @@ func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
 	c.Status(204)
 }
 
+// API_ReadIndxsForm формирует индекс (server-side операция).
+// @Summary      Build/form read index
+// @Tags         readindxs
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        id   path  int  true  "ReadIndxs ID"
+// @Success      204  {string}  string "No Content"
+// @Failure      400  {object}  ErrorResponse
+// @Router       /readindxs/{id}/form [post]
 func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	if err := h.Repository.ReadIndxsForm(id); err != nil {
@@ -84,6 +133,17 @@ func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
 	c.Status(204)
 }
 
+// API_ReadIndxsModerate модерация индекса.
+// @Summary      Moderate read index
+// @Tags         readindxs
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        id    path  int  true  "ReadIndxs ID"
+// @Param        body  body  ReadIndxsModerateRequest true "action payload"
+// @Success      200  {object}  ReadIndxsModerateResponse
+// @Failure      400  {object}  ErrorResponse
+// @Router       /readindxs/{id}/moderate [post]
 func (h *Handler) API_ReadIndxsModerate(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	uid := getUserID(c)
@@ -102,6 +162,15 @@ func (h *Handler) API_ReadIndxsModerate(c *gin.Context) {
 	c.JSON(200, data)
 }
 
+// API_ReadIndxsDelete мягкое удаление индекса.
+// @Summary      Soft delete read index
+// @Tags         readindxs
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        id   path  int  true  "ReadIndxs ID"
+// @Success      204  {string}  string "No Content"
+// @Failure      500  {object}  ErrorResponse
+// @Router       /readindxs/{id} [delete]
 func (h *Handler) API_ReadIndxsDelete(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	if err := h.Repository.ReadIndxsSoftDelete(id); err != nil {

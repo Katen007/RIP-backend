@@ -36,8 +36,8 @@ VALUES
 -- =======================
 -- Таблица read_indxs_to_text
 -- =======================
-INSERT INTO read_indxs_to_texts (text_id, read_indxs_id, formula)
+INSERT INTO read_indxs_to_texts (text_id, read_indxs_id, calculation, count_words, count_sentences, count_syllables)
 VALUES
-(1, 1, 'Фога'),
-(2, 1, 'SMOG'),
-(3, 1, 'Флеша');
+(1, 1, 0, 1000, 100, 120),
+(2, 1, 0, 1000, 100, 120),
+(3, 1, 0, 1000, 100, 120);

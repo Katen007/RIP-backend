@@ -6,14 +6,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type mmBody struct {
-	ReadIndxsID    int  `json:"read_indxs_id" binding:"required"`
-	TextID         int  `json:"text_id"      binding:"required"`
-	CountWords     *int `json:"count_words"`
-	CountSentences *int `json:"count_sentences"`
-	CountSyllables *int `json:"count_syllables"`
-}
-
+// API_ReadIndxsTextsUpdate обновляет метрики текста внутри индекса чтения.
+// @Summary      Update text metrics in read index
+// @Description  Partial update of word/sentence/syllable counters for specific text in a read index
+// @Tags         read-indxs
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        body  body      mmBody  true  "metrics payload"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {object}  ErrorResponse
+// @Failure      500   {object}  ErrorResponse
+// @Router       /readindxs-texts [patch]
 func (h *Handler) API_ReadIndxsTextsUpdate(c *gin.Context) {
 	var b mmBody
 	if err := c.ShouldBindJSON(&b); err != nil {
@@ -37,11 +41,17 @@ func (h *Handler) API_ReadIndxsTextsUpdate(c *gin.Context) {
 	c.Status(204)
 }
 
-type mmBodyDelete struct {
-	ReadIndxsID int `json:"read_indxs_id" binding:"required"`
-	TextID      int `json:"text_id"      binding:"required"`
-}
-
+// API_ReadIndxsTextsDelete удаляет текст из индекса чтения.
+// @Summary      Remove text from read index
+// @Tags         read-indxs
+// @Accept       json
+// @Produce      json
+// @Security     ApiKeyAuth
+// @Param        body  body      mmBodyDelete  true  "text delete payload"
+// @Success      204   {string}  string  "No Content"
+// @Failure      400   {object}  ErrorResponse
+// @Failure      500   {object}  ErrorResponse
+// @Router       /readindxs-texts [delete]
 func (h *Handler) API_ReadIndxsTextsDelete(c *gin.Context) {
 	var b mmBodyDelete
 	if err := c.ShouldBindJSON(&b); err != nil {
