@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 // API_ReadIndxsTextsUpdate обновляет метрики текста внутри индекса чтения.
@@ -53,13 +54,19 @@ func (h *Handler) API_ReadIndxsTextsUpdate(c *gin.Context) {
 // @Failure      500   {object}  ErrorResponse
 // @Router       /readindxs-texts [delete]
 func (h *Handler) API_ReadIndxsTextsDelete(c *gin.Context) {
-	var b mmBodyDelete
-	if err := c.ShouldBindJSON(&b); err != nil {
-		h.errorHandler(c, 400, err)
+	logrus.Info(1)
+	b, ok := c.Get("body")
+	if !ok {
+		h.errorHandler(c, 400, nil)
 		return
 	}
-	if err := h.Repository.ReadIndxsTextsDelete(b.ReadIndxsID, b.TextID); err != nil {
-		h.errorHandler(c, 500, err)
+	body, ok := b.(mmBodyDelete)
+	if !ok {
+		h.errorHandler(c, 400, nil)
+		return
+	}
+	if err := h.Repository.ReadIndxsTextsDelete(body.ReadIndxsID, body.TextID); err != nil {
+		h.errorHandler(c, 404, err)
 		return
 	}
 	c.Status(http.StatusNoContent)

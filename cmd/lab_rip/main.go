@@ -7,7 +7,7 @@ import (
 	"lab1_rip/internal/app/dsn"
 	"lab1_rip/internal/app/handler"
 	"lab1_rip/internal/app/repository"
-	"lab1_rip/internal/pkg"
+	"lab1_rip/internal/pkg/app"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -50,9 +50,12 @@ func main() {
 	if errRep != nil {
 		logrus.Fatalf("error initializing repository: %v", errRep)
 	}
+	redis, err := repository.NewRedis(conf)
+	if errRep != nil {
+		logrus.Fatalf("error initializing redis: %v", err)
+	}
+	hand := handler.NewHandler(rep, conf, redis)
 
-	hand := handler.NewHandler(rep)
-
-	application := pkg.NewApp(conf, router, hand)
+	application := app.NewApp(conf, router, hand)
 	application.RunApp()
 }

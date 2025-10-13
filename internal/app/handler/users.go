@@ -1,10 +1,15 @@
 package handler
 
 import (
+	"lab1_rip/internal/app/models"
 	"lab1_rip/internal/app/repository"
+	jwtutils "lab1_rip/internal/pkg/jwtUtils"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -60,24 +65,49 @@ func (h *Handler) API_UserRegister(c *gin.Context) {
 // @Failure      401   {object}  map[string]interface{}
 // @Router       /auth/login [post]
 func (h *Handler) API_AuthLogin(c *gin.Context) {
-	var in struct {
+	var credentials struct {
 		Login    string `json:"login" binding:"required"`
 		Password string `json:"password" binding:"required"`
 	}
-	if err := c.ShouldBindJSON(&in); err != nil {
+	if err := c.ShouldBindJSON(&credentials); err != nil {
 		h.errorHandler(c, http.StatusBadRequest, err)
 		return
 	}
-	u, err := h.Repository.UserByLogin(in.Login)
+	password := credentials.Password
+	user, err := h.Repository.UserByLogin(credentials.Login)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "description": "invalid credentials"})
+		h.errorHandler(c, 401, err)
 		return
 	}
-	if bcrypt.CompareHashAndPassword([]byte(u.HashedPassword), []byte(in.Password)) != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "description": "invalid credentials"})
+	if err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(password)); err != nil {
+		h.errorHandler(c, 401, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"ok": true})
+	claims := jwt.MapClaims{}
+	duration := h.Config.ExpiresAtMinutes
+	exp := time.Now().Add(duration)
+	logrus.Info(time.Unix(int64(exp.Unix()), 0).Format(time.ANSIC))
+	claims["sub"] = user.ID
+	claims["exp"] = exp.Unix()
+	claims["login"] = user.Login
+	claims["is_moderator"] = user.IsModerator
+	claims["token_type"] = "access"
+
+	tokenStr, err := jwtutils.CreateJwtToken(claims, h.Config.SecretKey)
+	if err != nil {
+		h.errorHandler(c, 401, err)
+		return
+	}
+
+	dto := models.AuthoResp{
+		TokenType:   "access",
+		ExpiresIn:   exp.Format(time.ANSIC),
+		AccessToken: tokenStr,
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"ok":   true,
+		"data": dto,
+	})
 }
 
 // API_AuthLogout godoc
@@ -88,6 +118,21 @@ func (h *Handler) API_AuthLogin(c *gin.Context) {
 // @Success      200  {object}  map[string]bool  "ok=true"
 // @Router       /auth/logout [post]
 func (h *Handler) API_AuthLogout(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		h.errorHandler(c, 401, nil)
+		return
+	}
+	tokenStr, ok := token.(string)
+	if !ok {
+		h.errorHandler(c, 400, nil)
+		return
+	}
+	err := h.Redis.SetBlackListJWT(c, tokenStr, h.Config.ExpiresAtMinutes)
+	if err != nil {
+		h.errorHandler(c, 500, err)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"ok": true})
 }
 
@@ -99,19 +144,13 @@ func (h *Handler) API_AuthLogout(c *gin.Context) {
 // @Failure      401  {object}  map[string]interface{}
 // @Router       /users/me [get]
 func (h *Handler) API_UserMe(c *gin.Context) {
-	uid_, ok := c.Get("user_id")
-	uid := uid_.(int)
-	if !ok {
+	user, err := h.GetUserDTO(c)
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "error", "description": "unauthorized"})
 		return
 	}
-	u, err := h.Repository.UserByID(uid)
-	if err != nil {
-		h.errorHandler(c, 500, err)
-		return
-	}
 	c.JSON(http.StatusOK, gin.H{
-		"id": u.ID, "login": u.Login, "isModerator": u.IsModerator,
+		"id": user.ID, "login": user.Login, "isModerator": user.IsModerator,
 	})
 }
 

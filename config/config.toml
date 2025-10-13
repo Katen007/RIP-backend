@@ -5,3 +5,14 @@ MinioPort = 9000
 MinioAccessKey = "minio"
 MinioSecretKey = "minio1234"
 MinioBucket = "img"
+SecretKey = "secret_key"
+ExpiresAtMinutes = "10m"
+
+RedisHost = "localhost"
+RedisPort = 6379
+RedisUser = ""
+RedisPassword = "password123"
+RedisDB = 0     
+RedisDialTimeoutSec = "10s"
+RedisReadTimeoutSec = "10s"
+RedisAppPrefix = "app:"

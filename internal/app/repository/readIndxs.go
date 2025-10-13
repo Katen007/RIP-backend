@@ -34,9 +34,12 @@ type ReadIndxsFilter struct {
 	DateTo   *time.Time
 }
 
-func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
+func (r *Repository) ReadIndxsList(user ds.User, f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
 	q := r.db.Model(ds.ReadIndxs{}).Preload("Creator").Preload("Moderator").Preload("ReadIndxsToTexts.Text").
 		Where("status IN ?", []string{ds.StatusFormed, ds.StatusCompleted, ds.StatusRejected})
+	if !user.IsModerator {
+		q = q.Where("creator_id = ?", user.ID)
+	}
 	if f.Status != "" {
 		q = q.Where("status = ?", f.Status)
 	}
@@ -46,8 +49,15 @@ func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
 	if f.DateTo != nil {
 		q = q.Where("date_form::date <= ?", f.DateTo.Format("2006-01-02"))
 	}
-	var res []ds.ReadIndxs
-	return res, q.Find(&res).Error
+	var v []ds.ReadIndxs
+	res := q.Find(&v)
+	if res.RowsAffected == 0 {
+		return v, gorm.ErrRecordNotFound
+	}
+	if res.Error != nil {
+		return nil, res.Error
+	}
+	return v, nil
 }
 
 func (r *Repository) ReadIndxsGet(id int) (ds.ReadIndxs, error) {

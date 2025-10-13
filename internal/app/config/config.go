@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
@@ -9,13 +10,26 @@ import (
 )
 
 type Config struct {
-	ServiceHost    string
-	ServicePort    int
+	ServiceHost string
+	ServicePort int
+
 	MinioHost      string
 	MinioPort      int
 	MinioAccessKey string
 	MinioSecretKey string
 	MinioBucket    string
+
+	SecretKey        string
+	ExpiresAtMinutes time.Duration
+
+	RedisHost           string
+	RedisPort           int
+	RedisUser           string
+	RedisPassword       string
+	RedisDB             int
+	RedisDialTimeoutSec time.Duration
+	RedisReadTimeoutSec time.Duration
+	RedisAppPrefix      string
 }
 
 func NewConfig() (*Config, error) {

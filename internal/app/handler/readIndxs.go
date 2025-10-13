@@ -19,7 +19,7 @@ import (
 // @Failure      400  {object}  ErrorResponse
 // @Router       /readindxs/my-text-cart [get]
 func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
-	uid := getUserID(c)
+	uid := h.GetUserID(c)
 	if c.IsAborted() {
 		h.errorHandler(c, 400, fmt.Errorf("invalid user id"))
 		return
@@ -60,12 +60,18 @@ func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 		dt = &t
 	}
 	logrus.Info(df, dt, q.DateFrom)
-	data, err := h.Repository.ReadIndxsList(repository.ReadIndxsFilter{Status: q.Status, DateFrom: df, DateTo: dt})
-	dto := ds.ToReadIndxsListDTO(data)
+	user, err := h.GetUserDTO(c)
+	if err != nil {
+		h.errorHandler(c, 401, err)
+		return
+	}
+	data, err := h.Repository.ReadIndxsList(user, repository.ReadIndxsFilter{Status: q.Status, DateFrom: df, DateTo: dt})
+
 	if err != nil {
 		h.errorHandler(c, 500, err)
 		return
 	}
+	dto := ds.ToReadIndxsListDTO(data)
 	c.JSON(200, dto)
 }
 
@@ -146,7 +152,7 @@ func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
 // @Router       /readindxs/{id}/moderate [post]
 func (h *Handler) API_ReadIndxsModerate(c *gin.Context) {
 	id := mustIntParam(c, "id")
-	uid := getUserID(c)
+	uid := h.GetUserID(c)
 	var body struct {
 		Action string `json:"action"`
 	}

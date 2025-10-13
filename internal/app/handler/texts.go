@@ -182,7 +182,7 @@ func (h *Handler) API_TextUploadImage(c *gin.Context) {
 // @Router       /texts/{id}/add-to-draft [post]
 func (h *Handler) API_TextAddToDraft(c *gin.Context) {
 	textID := mustIntParam(c, "id")
-	userID := getUserID(c)
+	userID := h.GetUserID(c)
 	if c.IsAborted() {
 		return
 	}

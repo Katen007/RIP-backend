@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"lab1_rip/internal/app/config"
 	"lab1_rip/internal/app/repository"
 	"net/http"
 	"strconv"
@@ -12,44 +13,48 @@ import (
 
 type Handler struct {
 	Repository *repository.Repository
+	Config     *config.Config
+	Redis      *repository.Redis
 }
 
-func NewHandler(r *repository.Repository) *Handler {
+func NewHandler(r *repository.Repository, c *config.Config, redis *repository.Redis) *Handler {
 	return &Handler{
 		Repository: r,
+		Config:     c,
+		Redis:      redis,
 	}
 }
 
 func (h *Handler) RegisterAPI(r *gin.Engine) {
-	api := r.Group("/api", LabFixedUser())
+	api := r.Group("/api")
 
 	// Text (услуги)
 	api.GET("/texts", h.API_TextsList)
 	api.GET("/texts/:id", h.API_TextGet)
 	api.POST("/texts", h.API_TextCreate)
-	api.PUT("/texts/:id", h.API_TextUpdate)
-	api.DELETE("/texts/:id", h.API_TextDelete)
-	api.POST("/texts/:id/image", h.API_TextUploadImage)
-	api.POST("/texts/:id/add-to-draft", h.API_TextAddToDraft)
+	api.PUT("/texts/:id", h.ModeratorValidateMiddleware(), h.API_TextUpdate)
+	api.DELETE("/texts/:id", h.ModeratorValidateMiddleware(), h.API_TextDelete)
+	api.POST("/texts/:id/image", h.ModeratorValidateMiddleware(), h.API_TextUploadImage)
+	api.POST("/texts/:id/add-to-draft", h.AuthoMiddleware(), h.API_TextAddToDraft)
 
 	// ReadIndxs (заявки)
-	api.GET("/readindxs/my-text-cart", h.API_ReadIndxsCartIcon)
-	api.GET("/readindxs", h.API_ReadIndxsList)
-	api.GET("/readindxs/:id", h.API_ReadIndxsGet)
-	api.PUT("/readindxs/:id", h.API_ReadIndxsUpdate)
-	api.PUT("/readindxs/:id/form", h.API_ReadIndxsForm)
-	api.PUT("/readindxs/:id/moderate", h.API_ReadIndxsModerate)
-	api.DELETE("/readindxs/:id", h.API_ReadIndxsDelete)
+	api.GET("/readindxs/my-text-cart", h.AuthoMiddleware(), h.API_ReadIndxsCartIcon)
+	api.GET("/readindxs", h.AuthoMiddleware(), h.API_ReadIndxsList)
+	api.GET("/readindxs/:id", h.AuthoMiddleware(), h.ReadIndxsAccessMiddleware(), h.API_ReadIndxsGet)
+	api.PUT("/readindxs/:id", h.AuthoMiddleware(), h.ReadIndxsAccessMiddleware(), h.API_ReadIndxsUpdate)
+	api.PUT("/readindxs/:id/form", h.AuthoMiddleware(), h.ReadIndxsAccessMiddleware(), h.API_ReadIndxsForm)
+	api.PUT("/readindxs/:id/moderate", h.ModeratorValidateMiddleware(), h.API_ReadIndxsModerate)
+	api.DELETE("/readindxs/:id", h.AuthoMiddleware(), h.ReadIndxsAccessMiddleware(), h.API_ReadIndxsDelete)
 
 	// m-m
-	api.PUT("/readindxs-texts/", h.API_ReadIndxsTextsUpdate)
-	api.DELETE("/readindxs-texts/", h.API_ReadIndxsTextsDelete)
+	api.PUT("/readindxs-texts/", h.AuthoMiddleware(), h.ReadIndxsToTextsAccessMiddleware(), h.API_ReadIndxsTextsUpdate)
+	api.DELETE("/readindxs-texts/", h.AuthoMiddleware(), h.ReadIndxsToTextsAccessMiddleware(), h.API_ReadIndxsTextsDelete)
 
 	api.POST("/users/register", h.API_UserRegister)
 	api.POST("/auth/login", h.API_AuthLogin)
-	api.POST("/auth/logout", h.API_AuthLogout) // можно и без мидлвари
-	api.GET("/users/me", h.API_UserMe)
-	api.PUT("/users/me", h.API_UserUpdateMe)
+	api.POST("/auth/logout", h.AuthoMiddleware(), h.API_AuthLogout) // можно и без мидлвари
+	api.GET("/users/me", h.AuthoMiddleware(), h.API_UserMe)
+	api.PUT("/users/me", h.AuthoMiddleware(), h.API_UserUpdateMe)
 }
 
 // errorHandler для более удобного вывода ошибок
