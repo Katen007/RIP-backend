@@ -117,6 +117,7 @@ func (h *Handler) API_AuthLogin(c *gin.Context) {
 // @Param        body  body      nil  false  "Логаут"
 // @Success      200  {object}  map[string]bool  "ok=true"
 // @Router       /auth/logout [post]
+// @Security BearerAuth
 func (h *Handler) API_AuthLogout(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
@@ -142,6 +143,7 @@ func (h *Handler) API_AuthLogout(c *gin.Context) {
 // @Produce      json
 // @Success      200  {object}  ds.User
 // @Failure      401  {object}  map[string]interface{}
+// @Security BearerAuth
 // @Router       /users/me [get]
 func (h *Handler) API_UserMe(c *gin.Context) {
 	user, err := h.GetUserDTO(c)
@@ -164,6 +166,7 @@ func (h *Handler) API_UserMe(c *gin.Context) {
 // @Failure      400   {object}  map[string]interface{}
 // @Failure      401   {object}  map[string]interface{}
 // @Failure      500   {object}  map[string]interface{}
+// @Security BearerAuth
 // @Router       /users/me [patch]
 func (h *Handler) API_UserUpdateMe(c *gin.Context) {
 	uid_, ok := c.Get("user_id")

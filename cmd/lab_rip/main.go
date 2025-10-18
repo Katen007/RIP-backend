@@ -9,9 +9,13 @@ import (
 	"lab1_rip/internal/app/repository"
 	"lab1_rip/internal/pkg/app"
 
+	_ "lab1_rip/docs"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // @title           Swagger Example API
@@ -28,7 +32,9 @@ import (
 // @host      localhost:8080
 // @BasePath  /api
 
-// @securityDefinitions.basic  BasicAuth
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
@@ -57,5 +63,6 @@ func main() {
 	hand := handler.NewHandler(rep, conf, redis)
 
 	application := app.NewApp(conf, router, hand)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, ginSwagger.PersistAuthorization(true)))
 	application.RunApp()
 }

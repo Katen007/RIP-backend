@@ -18,6 +18,7 @@ import (
 // @Success      204   {string}  string  "No Content"
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs-texts [patch]
 func (h *Handler) API_ReadIndxsTextsUpdate(c *gin.Context) {
 	var b mmBody
@@ -52,6 +53,7 @@ func (h *Handler) API_ReadIndxsTextsUpdate(c *gin.Context) {
 // @Success      204   {string}  string  "No Content"
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs-texts [delete]
 func (h *Handler) API_ReadIndxsTextsDelete(c *gin.Context) {
 	logrus.Info(1)

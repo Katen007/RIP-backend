@@ -53,6 +53,7 @@ func (h *Handler) API_TextGet(c *gin.Context) {
 // @Success      201   {object}  TextDTO
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /texts [post]
 func (h *Handler) API_TextCreate(c *gin.Context) {
 	var dto struct {
@@ -81,6 +82,7 @@ func (h *Handler) API_TextCreate(c *gin.Context) {
 // @Success      204   {string}  string "No Content"
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /texts/{id} [patch]
 func (h *Handler) API_TextUpdate(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -104,6 +106,7 @@ func (h *Handler) API_TextUpdate(c *gin.Context) {
 // @Success      204  {string} string "No Content"
 // @Failure      400  {object} ErrorResponse
 // @Failure      500  {object} ErrorResponse
+// @Security BearerAuth
 // @Router       /texts/{id} [delete]
 func (h *Handler) API_TextDelete(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -139,6 +142,7 @@ func (h *Handler) API_TextDelete(c *gin.Context) {
 // @Success      201   {object}  map[string]string  "image_key"
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /texts/{id}/image [post]
 func (h *Handler) API_TextUploadImage(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -179,6 +183,7 @@ func (h *Handler) API_TextUploadImage(c *gin.Context) {
 // @Param        id   path  int  true  "textID"
 // @Success      204  "No Content"
 // @Failure      400  {object}  map[string]interface{}
+// @Security BearerAuth
 // @Router       /texts/{id}/add-to-draft [post]
 func (h *Handler) API_TextAddToDraft(c *gin.Context) {
 	textID := mustIntParam(c, "id")

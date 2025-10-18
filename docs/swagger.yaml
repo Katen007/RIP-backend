@@ -195,6 +195,8 @@ paths:
             additionalProperties:
               type: boolean
             type: object
+      security:
+      - BearerAuth: []
       summary: Логаут
       tags:
       - auth
@@ -226,6 +228,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: List read indices
       tags:
       - readindxs
@@ -257,6 +260,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Remove text from read index
       tags:
       - read-indxs
@@ -289,6 +293,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Update text metrics in read index
       tags:
       - read-indxs
@@ -313,6 +318,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Soft delete read index
       tags:
       - readindxs
@@ -336,6 +342,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Get read index by id
       tags:
       - readindxs
@@ -372,6 +379,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Update read index (partial)
       tags:
       - readindxs
@@ -396,6 +404,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Build/form read index
       tags:
       - readindxs
@@ -428,6 +437,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Moderate read index
       tags:
       - readindxs
@@ -446,6 +456,7 @@ paths:
             $ref: '#/definitions/handler.ErrorResponse'
       security:
       - ApiKeyAuth: []
+      - BearerAuth: []
       summary: Read indices cart icon info
       tags:
       - readindxs
@@ -497,6 +508,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create text
       tags:
       - texts
@@ -523,6 +536,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Soft delete text
       tags:
       - texts
@@ -577,6 +592,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update text (partial)
       tags:
       - texts
@@ -596,6 +613,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Добавить текст в черновик индексов пользователя
       tags:
       - texts
@@ -634,6 +653,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/handler.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Upload text image
       tags:
       - texts
@@ -651,6 +672,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Текущий пользователь
       tags:
       - users
@@ -686,6 +709,8 @@ paths:
           schema:
             additionalProperties: true
             type: object
+      security:
+      - BearerAuth: []
       summary: Обновить свои данные
       tags:
       - users
@@ -726,6 +751,8 @@ paths:
       tags:
       - auth
 securityDefinitions:
-  BasicAuth:
-    type: basic
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

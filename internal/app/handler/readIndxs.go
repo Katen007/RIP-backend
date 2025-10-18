@@ -17,6 +17,7 @@ import (
 // @Security     ApiKeyAuth
 // @Success      200  {object}  CartIconResponse
 // @Failure      400  {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs/my-text-cart [get]
 func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 	uid := h.GetUserID(c)
@@ -42,6 +43,7 @@ func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 // @Param        date_to    query     string false "YYYY-MM-DD"
 // @Success      200  {object}  ReadIndxsListResponse
 // @Failure      500  {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs [get]
 func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 	var q struct {
@@ -83,6 +85,7 @@ func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 // @Param        id   path  int  true  "ReadIndxs ID"
 // @Success      200  {object}  ReadIndxsInfoResponse
 // @Failure      404  {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs/{id} [get]
 func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -106,6 +109,7 @@ func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
 // @Success      204   {string}  string  "No Content"
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs/{id} [patch]
 func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -129,6 +133,7 @@ func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
 // @Param        id   path  int  true  "ReadIndxs ID"
 // @Success      204  {string}  string "No Content"
 // @Failure      400  {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs/{id}/form [post]
 func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -149,6 +154,7 @@ func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
 // @Param        body  body  ReadIndxsModerateRequest true "action payload"
 // @Success      200  {object}  ReadIndxsModerateResponse
 // @Failure      400  {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs/{id}/moderate [post]
 func (h *Handler) API_ReadIndxsModerate(c *gin.Context) {
 	id := mustIntParam(c, "id")
@@ -176,6 +182,7 @@ func (h *Handler) API_ReadIndxsModerate(c *gin.Context) {
 // @Param        id   path  int  true  "ReadIndxs ID"
 // @Success      204  {string}  string "No Content"
 // @Failure      500  {object}  ErrorResponse
+// @Security BearerAuth
 // @Router       /readindxs/{id} [delete]
 func (h *Handler) API_ReadIndxsDelete(c *gin.Context) {
 	id := mustIntParam(c, "id")
