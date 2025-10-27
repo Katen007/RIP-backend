@@ -5,7 +5,9 @@ import (
 	"lab1_rip/internal/app/repository"
 	"net/http"
 	"strconv"
+	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
@@ -21,6 +23,32 @@ func NewHandler(r *repository.Repository) *Handler {
 }
 
 func (h *Handler) RegisterAPI(r *gin.Engine) {
+	// 1. CORS middleware
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{
+			"http://localhost:5173", // твой React dev (vite)
+			"http://localhost:3000", // если у тебя CRA/Next или fallback
+		},
+		AllowMethods: []string{
+			"GET",
+			"POST",
+			"PUT",
+			"DELETE",
+			"OPTIONS",
+		},
+		AllowHeaders: []string{
+			"Content-Type",
+			"Authorization",
+			"X-Requested-With",
+		},
+		ExposeHeaders: []string{
+			"Content-Length",
+		},
+		AllowCredentials: true,           // нужно true если у тебя куки/сессия
+		MaxAge:           12 * time.Hour, // кэш preflight
+	}))
+
+	// 2. Группа API как и было
 	api := r.Group("/api", LabFixedUser())
 
 	// Text (услуги)
@@ -45,9 +73,10 @@ func (h *Handler) RegisterAPI(r *gin.Engine) {
 	api.PUT("/readindxs-texts/", h.API_ReadIndxsTextsUpdate)
 	api.DELETE("/readindxs-texts/", h.API_ReadIndxsTextsDelete)
 
+	// auth / user
 	api.POST("/users/register", h.API_UserRegister)
 	api.POST("/auth/login", h.API_AuthLogin)
-	api.POST("/auth/logout", h.API_AuthLogout) // можно и без мидлвари
+	api.POST("/auth/logout", h.API_AuthLogout)
 	api.GET("/users/me", h.API_UserMe)
 	api.PUT("/users/me", h.API_UserUpdateMe)
 }
