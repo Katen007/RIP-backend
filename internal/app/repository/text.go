@@ -6,13 +6,13 @@ import (
 	"gorm.io/gorm"
 )
 
-func (r *Repository) TextsList(title string) ([]ds.Text, error) {
+func (r *Repository) TextsList(title string, limit int, offset int) ([]ds.Text, error) {
 	q := r.db.Where("is_delete = false")
 	if title != "" {
 		q = q.Where("title ILIKE ?", "%"+title+"%")
 	}
 	var res []ds.Text
-	return res, q.Find(&res).Error
+	return res, q.Limit(limit).Offset(offset).Find(&res).Error
 }
 func (r *Repository) TextByID(id int) (ds.Text, error) {
 	var t ds.Text

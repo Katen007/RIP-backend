@@ -24,11 +24,18 @@ func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 	c.JSON(200, gin.H{"draft_readIndxs_id": id, "texts_count": cnt})
 }
 
+type ReadIndxsFilters struct {
+	Status   string `form:"status"`
+	DateFrom string `form:"date_from"`
+	DateTo   string `form:"date_to"`
+	Limit    int    `form:"limit"`
+	Offset   int    `form:"offset"`
+}
+
 func (h *Handler) API_ReadIndxsList(c *gin.Context) {
-	var q struct {
-		Status   string `form:"status"`
-		DateFrom string `form:"date_from"`
-		DateTo   string `form:"date_to"`
+	var q = ReadIndxsFilters{
+		Limit:  10,
+		Offset: 0,
 	}
 	_ = c.ShouldBindQuery(&q)
 	var df, dt *time.Time = nil, nil
@@ -41,7 +48,14 @@ func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 		dt = &t
 	}
 	logrus.Info(df, dt, q.DateFrom)
-	data, err := h.Repository.ReadIndxsList(repository.ReadIndxsFilter{Status: q.Status, DateFrom: df, DateTo: dt})
+	data, err := h.Repository.ReadIndxsList(
+		repository.ReadIndxsFilter{
+			Status:   q.Status,
+			DateFrom: df,
+			DateTo:   dt,
+			Offset:   q.Offset,
+			Limit:    q.Limit,
+		})
 	dto := ds.ToReadIndxsListDTO(data)
 	if err != nil {
 		h.errorHandler(c, 500, err)

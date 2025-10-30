@@ -6,9 +6,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type TextsFilters struct {
+	Title  string `form:"title"`
+	Limit  int    `form:"title"`
+	Offset int    `form:"offset"`
+}
+
 func (h *Handler) API_TextsList(c *gin.Context) {
-	title := c.Query("title")
-	data, err := h.Repository.TextsList(title)
+	var f = TextsFilters{
+		Limit:  10,
+		Offset: 0,
+	}
+	err := c.ShouldBindQuery(&f)
+	if err != nil {
+		h.errorHandler(c, 400, err)
+		return
+	}
+	data, err := h.Repository.TextsList(f.Title, f.Limit, f.Offset)
 	if err != nil {
 		h.errorHandler(c, 500, err)
 		return

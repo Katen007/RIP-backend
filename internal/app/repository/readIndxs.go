@@ -32,6 +32,8 @@ type ReadIndxsFilter struct {
 	Status   string
 	DateFrom *time.Time
 	DateTo   *time.Time
+	Limit    int
+	Offset   int
 }
 
 func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
@@ -47,7 +49,7 @@ func (r *Repository) ReadIndxsList(f ReadIndxsFilter) ([]ds.ReadIndxs, error) {
 		q = q.Where("date_form::date <= ?", f.DateTo.Format("2006-01-02"))
 	}
 	var res []ds.ReadIndxs
-	return res, q.Find(&res).Error
+	return res, q.Limit(f.Limit).Offset(f.Offset).Find(&res).Error
 }
 
 func (r *Repository) ReadIndxsGet(id int) (ds.ReadIndxs, error) {
