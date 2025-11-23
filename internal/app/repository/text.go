@@ -1,24 +1,31 @@
 package repository
 
 import (
+	"fmt"
 	"lab1_rip/internal/app/ds"
 
 	"gorm.io/gorm"
 )
 
 func (r *Repository) TextsList(title string, limit int, offset int) ([]ds.Text, error) {
+	fmt.Println(limit, offset)
 	q := r.db.Where("is_delete = false")
 	if title != "" {
 		q = q.Where("title ILIKE ?", "%"+title+"%")
 	}
 	var res []ds.Text
-	return res, q.Limit(limit).Offset(offset).Find(&res).Error
+	return res, q.Limit(limit).Offset(offset).Order("id ASC").Find(&res).Error
 }
+
 func (r *Repository) TextByID(id int) (ds.Text, error) {
 	var t ds.Text
 	return t, r.db.Where("id = ? AND is_delete = false", id).First(&t).Error
 }
-func (r *Repository) TextCreate(t *ds.Text) error { return r.db.Create(t).Error }
+
+func (r *Repository) TextCreate(t *ds.Text) error { 
+	return r.db.Create(t).Error
+}
+
 func (r *Repository) TextUpdate(id int, fields map[string]any) error {
 	delete(fields, "id")
 	delete(fields, "is_delete")

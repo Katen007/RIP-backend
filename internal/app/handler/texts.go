@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"lab1_rip/internal/app/ds"
 
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,7 @@ import (
 
 type TextsFilters struct {
 	Title  string `form:"title"`
-	Limit  int    `form:"title"`
+	Limit  int    `form:"limit"`
 	Offset int    `form:"offset"`
 }
 
@@ -27,6 +28,7 @@ func (h *Handler) API_TextsList(c *gin.Context) {
 		h.errorHandler(c, 500, err)
 		return
 	}
+	fmt.Println(data[0].Title)
 	textDto := ds.ToTextsListDTO(data)
 	c.JSON(200, textDto)
 }

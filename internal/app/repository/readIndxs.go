@@ -12,16 +12,17 @@ import (
 
 func (r *Repository) ReadIndxsCartIcon(userId int) (*int, int, error) {
 	var ri ds.ReadIndxs
+	defaul := -1
 	if err := r.db.Where("creator_id = ? AND status = ?", userId, ds.StatusDraft).First(&ri).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, 0, nil
+			return &defaul, 0, nil
 		}
 		return nil, 0, err
 	}
 	var c int64
 	if err := r.db.Model(&ds.ReadIndxsToText{}).Where("read_indxs_id = ?", ri.ID).Count(&c).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, 0, nil
+			return &defaul, 0, nil
 		}
 		return nil, 0, err
 	}
