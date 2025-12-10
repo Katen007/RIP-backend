@@ -48,12 +48,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "ok=true",
+                        "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "boolean"
-                            }
+                            "$ref": "#/definitions/handler.Response-models_AuthoResp"
                         }
                     },
                     "400": {
@@ -148,7 +145,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.ReadIndxsListResponse"
+                            "type": "list"
                         }
                     },
                     "500": {
@@ -161,58 +158,7 @@ const docTemplate = `{
             }
         },
         "/readindxs-texts": {
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "read-indxs"
-                ],
-                "summary": "Remove text from read index",
-                "parameters": [
-                    {
-                        "description": "text delete payload",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.mmBodyDelete"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -240,6 +186,57 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/handler.mmBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "read-indxs"
+                ],
+                "summary": "Remove text from read index",
+                "parameters": [
+                    {
+                        "description": "text delete payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.mmBodyDelete"
                         }
                     }
                 ],
@@ -328,7 +325,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.ReadIndxsInfoResponse"
+                            "$ref": "#/definitions/ds.ReadIndxsInfoDTO"
                         }
                     },
                     "404": {
@@ -339,47 +336,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    },
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "readindxs"
-                ],
-                "summary": "Soft delete read index",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "ReadIndxs ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "patch": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -437,10 +394,50 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "readindxs"
+                ],
+                "summary": "Soft delete read index",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ReadIndxs ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/readindxs/{id}/form": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -482,7 +479,7 @@ const docTemplate = `{
             }
         },
         "/readindxs/{id}/moderate": {
-            "post": {
+            "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -878,7 +875,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "patch": {
+            "put": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -992,6 +989,78 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "ds.ReadIndxsInfoDTO": {
+            "type": "object",
+            "properties": {
+                "commenst": {
+                    "type": "string"
+                },
+                "contacts": {
+                    "type": "string"
+                },
+                "creator": {
+                    "type": "string"
+                },
+                "date_create": {
+                    "type": "string"
+                },
+                "date_end": {
+                    "type": "string"
+                },
+                "date_form": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "moderator": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "texts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ds.ReadIndxsToText"
+                    }
+                }
+            }
+        },
+        "ds.ReadIndxsToText": {
+            "type": "object",
+            "properties": {
+                "calculation": {
+                    "type": "integer"
+                },
+                "count_sentences": {
+                    "type": "integer"
+                },
+                "count_syllables": {
+                    "type": "integer"
+                },
+                "count_words": {
+                    "type": "integer"
+                },
+                "data": {
+                    "$ref": "#/definitions/ds.Text"
+                }
+            }
+        },
+        "ds.Text": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "image_url": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "ds.User": {
             "type": "object",
             "properties": {
@@ -1028,55 +1097,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.ReadIndxsInfoResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "texts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/handler.TextDTO"
-                    }
-                },
-                "thematic": {}
-            }
-        },
-        "handler.ReadIndxsListItem": {
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "texts_count": {
-                    "type": "integer"
-                },
-                "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.ReadIndxsListResponse": {
-            "type": "object",
-            "properties": {
-                "items": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/handler.ReadIndxsListItem"
-                    }
-                }
-            }
-        },
         "handler.ReadIndxsModerateRequest": {
             "type": "object",
             "properties": {
@@ -1093,6 +1113,17 @@ const docTemplate = `{
                 },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "handler.Response-models_AuthoResp": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/models.AuthoResp"
+                },
+                "ok": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1149,10 +1180,6 @@ const docTemplate = `{
         },
         "handler.mmBody": {
             "type": "object",
-            "required": [
-                "read_indxs_id",
-                "text_id"
-            ],
             "properties": {
                 "count_sentences": {
                     "type": "integer"
@@ -1187,6 +1214,20 @@ const docTemplate = `{
                 "text_id": {
                     "description": "required: true",
                     "type": "integer"
+                }
+            }
+        },
+        "models.AuthoResp": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "expiresIn": {
+                    "type": "string"
+                },
+                "tokenType": {
+                    "type": "string"
                 }
             }
         }

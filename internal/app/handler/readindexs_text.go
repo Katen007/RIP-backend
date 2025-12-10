@@ -19,7 +19,7 @@ import (
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
 // @Security BearerAuth
-// @Router       /readindxs-texts [patch]
+// @Router       /readindxs-texts [put]
 func (h *Handler) API_ReadIndxsTextsUpdate(c *gin.Context) {
 	var b mmBody
 	if err := c.ShouldBindJSON(&b); err != nil {

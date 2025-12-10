@@ -115,9 +115,9 @@ type ReadIndxsModerateResponse struct {
 // swagger:model ReadIndxsTextMetricsUpdate
 type mmBody struct {
 	// required: true
-	ReadIndxsID int `json:"read_indxs_id" binding:"required"`
+	ReadIndxsID int `json:"read_indxs_id"`
 	// required: true
-	TextID         int  `json:"text_id"      binding:"required"`
+	TextID         int  `json:"text_id"`
 	CountWords     *int `json:"count_words"`
 	CountSentences *int `json:"count_sentences"`
 	CountSyllables *int `json:"count_syllables"`

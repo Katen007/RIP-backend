@@ -41,7 +41,7 @@ func (h *Handler) API_ReadIndxsCartIcon(c *gin.Context) {
 // @Param        status     query     string false "status filter"
 // @Param        date_from  query     string false "YYYY-MM-DD"
 // @Param        date_to    query     string false "YYYY-MM-DD"
-// @Success      200  {object}  ReadIndxsListResponse
+// @Success      200  {list}  []ds.ReadIndxsListDTO
 // @Failure      500  {object}  ErrorResponse
 // @Security BearerAuth
 // @Router       /readindxs [get]
@@ -83,7 +83,7 @@ func (h *Handler) API_ReadIndxsList(c *gin.Context) {
 // @Produce      json
 // @Security     ApiKeyAuth
 // @Param        id   path  int  true  "ReadIndxs ID"
-// @Success      200  {object}  ReadIndxsInfoResponse
+// @Success      200  {object}  ds.ReadIndxsInfoDTO
 // @Failure      404  {object}  ErrorResponse
 // @Security BearerAuth
 // @Router       /readindxs/{id} [get]
@@ -110,7 +110,7 @@ func (h *Handler) API_ReadIndxsGet(c *gin.Context) {
 // @Failure      400   {object}  ErrorResponse
 // @Failure      500   {object}  ErrorResponse
 // @Security BearerAuth
-// @Router       /readindxs/{id} [patch]
+// @Router       /readindxs/{id} [put]
 func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	var body map[string]any
@@ -134,7 +134,7 @@ func (h *Handler) API_ReadIndxsUpdate(c *gin.Context) {
 // @Success      204  {string}  string "No Content"
 // @Failure      400  {object}  ErrorResponse
 // @Security BearerAuth
-// @Router       /readindxs/{id}/form [post]
+// @Router       /readindxs/{id}/form [put]
 func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	if err := h.Repository.ReadIndxsForm(id); err != nil {
@@ -155,7 +155,7 @@ func (h *Handler) API_ReadIndxsForm(c *gin.Context) {
 // @Success      200  {object}  ReadIndxsModerateResponse
 // @Failure      400  {object}  ErrorResponse
 // @Security BearerAuth
-// @Router       /readindxs/{id}/moderate [post]
+// @Router       /readindxs/{id}/moderate [put]
 func (h *Handler) API_ReadIndxsModerate(c *gin.Context) {
 	id := mustIntParam(c, "id")
 	uid := h.GetUserID(c)

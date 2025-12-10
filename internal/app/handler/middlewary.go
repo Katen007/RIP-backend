@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"lab1_rip/internal/app/ds"
 	jwtutils "lab1_rip/internal/pkg/jwtUtils"
 	"net/http"
@@ -31,6 +33,7 @@ func (h *Handler) AuthoMiddleware() gin.HandlerFunc {
 		}
 		ctx.Set("user", user)
 		ctx.Set("token", jwtTokenStr)
+		ctx.Set(CtxUserID, user.ID)
 		ctx.Next()
 	}
 }
@@ -145,12 +148,27 @@ func (h *Handler) ReadIndxsToTextsAccessMiddleware() gin.HandlerFunc {
 			h.errorHandler(ctx, http.StatusNotFound, err)
 			return
 		}
+
+		// прочитаем raw body и восстановим позже
+		data, err := io.ReadAll(ctx.Request.Body)
+		if err != nil {
+			h.errorHandler(ctx, http.StatusBadRequest, err)
+			return
+		}
+		// восстановим поток для следующих хендлеров
+		ctx.Request.Body = io.NopCloser(bytes.NewBuffer(data))
+
 		var b mmBodyDelete
 		if err := ctx.ShouldBindJSON(&b); err != nil {
 			h.errorHandler(ctx, 400, err)
 			return
 		}
+
+		// ещё раз восстановим body (на всякий случай) чтобы downstream мог читать
+		ctx.Request.Body = io.NopCloser(bytes.NewBuffer(data))
+
 		ctx.Set("body", b)
+
 		readIndxs, err := h.Repository.ReadIndxsTextsGet(b.ReadIndxsID, b.TextID)
 		if err != nil {
 			h.errorHandler(ctx, 500, err)
@@ -163,3 +181,5 @@ func (h *Handler) ReadIndxsToTextsAccessMiddleware() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+
+// ...existing code...

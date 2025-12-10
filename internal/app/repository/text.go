@@ -12,7 +12,7 @@ func (r *Repository) TextsList(title string) ([]ds.Text, error) {
 		q = q.Where("title ILIKE ?", "%"+title+"%")
 	}
 	var res []ds.Text
-	return res, q.Find(&res).Error
+	return res, q.Limit(10).Order("id ASC").Find(&res).Error
 }
 func (r *Repository) TextByID(id int) (ds.Text, error) {
 	var t ds.Text

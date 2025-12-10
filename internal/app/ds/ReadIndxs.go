@@ -37,7 +37,7 @@ type ReadIndxsInfoDTO struct {
 	DateCreate time.Time         `json:"date_create"`
 	DateForm   *time.Time        `json:"date_form"`
 	DateEnd    *time.Time        `json:"date_end"`
-	Comments   string            `json:"commenst"`
+	Comments   string            `json:"comments"`
 	Contacts   *string           `json:"contacts"`
 	Creator    string            `json:"creator"`
 	Moderator  *string           `json:"moderator"`

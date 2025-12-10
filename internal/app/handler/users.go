@@ -1,8 +1,11 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"lab1_rip/internal/app/models"
 	"lab1_rip/internal/app/repository"
+
 	jwtutils "lab1_rip/internal/pkg/jwtUtils"
 	"net/http"
 	"time"
@@ -12,6 +15,11 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
+
+type Response[T any] struct {
+	Ok   bool `json:"ok"`
+	Data T    `json:"data"`
+}
 
 // API_UserRegister godoc
 // @Summary      Регистрация пользователя
@@ -60,7 +68,7 @@ func (h *Handler) API_UserRegister(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        body  body      UserCredentials  true  "Логин"
-// @Success      200   {object}  map[string]bool  "ok=true"
+// @Success      200   {object}  Response[models.AuthoResp]
 // @Failure      400   {object}  map[string]interface{}
 // @Failure      401   {object}  map[string]interface{}
 // @Router       /auth/login [post]
@@ -167,12 +175,19 @@ func (h *Handler) API_UserMe(c *gin.Context) {
 // @Failure      401   {object}  map[string]interface{}
 // @Failure      500   {object}  map[string]interface{}
 // @Security BearerAuth
-// @Router       /users/me [patch]
+// @Router       /users/me [put]
 func (h *Handler) API_UserUpdateMe(c *gin.Context) {
-	uid_, ok := c.Get("user_id")
-	uid := uid_.(int)
+	uid_, ok := c.Get(CtxUserID)
+	//uid := uid_.(int)
+	if !ok || uid_ == nil {
+		h.errorHandler(c, 401, errors.New("unauthorized: uid not found in context"))
+		//c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "error", "description": "unauthorized"})
+		return
+	}
+	fmt.Println("uid_", uid_)
+	uid, ok := uid_.(int)
 	if !ok {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"status": "error", "description": "unauthorized"})
+		h.errorHandler(c, 500, errors.New("invalid uid type in context"))
 		return
 	}
 	var in struct {

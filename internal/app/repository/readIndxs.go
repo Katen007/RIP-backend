@@ -50,7 +50,7 @@ func (r *Repository) ReadIndxsList(user ds.User, f ReadIndxsFilter) ([]ds.ReadIn
 		q = q.Where("date_form::date <= ?", f.DateTo.Format("2006-01-02"))
 	}
 	var v []ds.ReadIndxs
-	res := q.Find(&v)
+	res := q.Limit(10).Find(&v)
 	if res.RowsAffected == 0 {
 		return v, gorm.ErrRecordNotFound
 	}

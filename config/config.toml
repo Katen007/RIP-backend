@@ -6,7 +6,7 @@ MinioAccessKey = "minio"
 MinioSecretKey = "minio1234"
 MinioBucket = "img"
 SecretKey = "secret_key"
-ExpiresAtMinutes = "10m"
+ExpiresAtMinutes = "100m"
 
 RedisHost = "localhost"
 RedisPort = 6379

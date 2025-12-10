@@ -1,5 +1,52 @@
 basePath: /api
 definitions:
+  ds.ReadIndxsInfoDTO:
+    properties:
+      commenst:
+        type: string
+      contacts:
+        type: string
+      creator:
+        type: string
+      date_create:
+        type: string
+      date_end:
+        type: string
+      date_form:
+        type: string
+      id:
+        type: integer
+      moderator:
+        type: string
+      status:
+        type: string
+      texts:
+        items:
+          $ref: '#/definitions/ds.ReadIndxsToText'
+        type: array
+    type: object
+  ds.ReadIndxsToText:
+    properties:
+      calculation:
+        type: integer
+      count_sentences:
+        type: integer
+      count_syllables:
+        type: integer
+      count_words:
+        type: integer
+      data:
+        $ref: '#/definitions/ds.Text'
+    type: object
+  ds.Text:
+    properties:
+      id:
+        type: integer
+      image_url:
+        type: string
+      title:
+        type: string
+    type: object
   ds.User:
     properties:
       id:
@@ -23,38 +70,6 @@ definitions:
       status:
         type: string
     type: object
-  handler.ReadIndxsInfoResponse:
-    properties:
-      id:
-        type: integer
-      status:
-        type: string
-      texts:
-        items:
-          $ref: '#/definitions/handler.TextDTO'
-        type: array
-      thematic: {}
-    type: object
-  handler.ReadIndxsListItem:
-    properties:
-      created_at:
-        type: string
-      id:
-        type: integer
-      status:
-        type: string
-      texts_count:
-        type: integer
-      updated_at:
-        type: string
-    type: object
-  handler.ReadIndxsListResponse:
-    properties:
-      items:
-        items:
-          $ref: '#/definitions/handler.ReadIndxsListItem'
-        type: array
-    type: object
   handler.ReadIndxsModerateRequest:
     properties:
       action:
@@ -66,6 +81,13 @@ definitions:
         type: integer
       status:
         type: string
+    type: object
+  handler.Response-models_AuthoResp:
+    properties:
+      data:
+        $ref: '#/definitions/models.AuthoResp'
+      ok:
+        type: boolean
     type: object
   handler.TextCreateRequest:
     properties:
@@ -115,9 +137,6 @@ definitions:
       text_id:
         description: 'required: true'
         type: integer
-    required:
-    - read_indxs_id
-    - text_id
     type: object
   handler.mmBodyDelete:
     properties:
@@ -130,6 +149,15 @@ definitions:
     required:
     - read_indxs_id
     - text_id
+    type: object
+  models.AuthoResp:
+    properties:
+      accessToken:
+        type: string
+      expiresIn:
+        type: string
+      tokenType:
+        type: string
     type: object
 externalDocs:
   description: OpenAPI
@@ -162,11 +190,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: ok=true
+          description: OK
           schema:
-            additionalProperties:
-              type: boolean
-            type: object
+            $ref: '#/definitions/handler.Response-models_AuthoResp'
         "400":
           description: Bad Request
           schema:
@@ -221,7 +247,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.ReadIndxsListResponse'
+            type: list
         "500":
           description: Internal Server Error
           schema:
@@ -264,7 +290,7 @@ paths:
       summary: Remove text from read index
       tags:
       - read-indxs
-    patch:
+    put:
       consumes:
       - application/json
       description: Partial update of word/sentence/syllable counters for specific
@@ -335,7 +361,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.ReadIndxsInfoResponse'
+            $ref: '#/definitions/ds.ReadIndxsInfoDTO'
         "404":
           description: Not Found
           schema:
@@ -346,7 +372,7 @@ paths:
       summary: Get read index by id
       tags:
       - readindxs
-    patch:
+    put:
       consumes:
       - application/json
       parameters:
@@ -384,7 +410,7 @@ paths:
       tags:
       - readindxs
   /readindxs/{id}/form:
-    post:
+    put:
       parameters:
       - description: ReadIndxs ID
         in: path
@@ -409,7 +435,7 @@ paths:
       tags:
       - readindxs
   /readindxs/{id}/moderate:
-    post:
+    put:
       consumes:
       - application/json
       parameters:
@@ -677,7 +703,7 @@ paths:
       summary: Текущий пользователь
       tags:
       - users
-    patch:
+    put:
       consumes:
       - application/json
       parameters:
