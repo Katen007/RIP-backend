@@ -18,10 +18,12 @@ const CtxUserID = "user_id"
 func (h *Handler) AuthoMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		jwtTokenStr, err := GetTokenInHeader(ctx.Request.Header)
+
 		if err != nil {
 			h.errorHandler(ctx, http.StatusUnauthorized, err)
 			return
 		}
+		logrus.Printf("token : %s", jwtTokenStr)
 		if err := h.Redis.GetBlackListJWT(ctx, jwtTokenStr); err == nil {
 			h.errorHandler(ctx, http.StatusUnauthorized, fmt.Errorf("unauthorized: token in blacklist"))
 			return
@@ -31,6 +33,7 @@ func (h *Handler) AuthoMiddleware() gin.HandlerFunc {
 			h.errorHandler(ctx, http.StatusUnauthorized, err)
 			return
 		}
+		logrus.Printf("user1 : %v", user.IsModerator)
 		ctx.Set("user", user)
 		ctx.Set("token", jwtTokenStr)
 		ctx.Set(CtxUserID, user.ID)
@@ -120,7 +123,6 @@ func (h *Handler) ReadIndxsAccessMiddleware() gin.HandlerFunc {
 			h.errorHandler(ctx, http.StatusNotFound, err)
 			return
 		}
-		fmt.Println("user: %v", user.IsModerator)
 		if user.IsModerator {
 			ctx.Next()
 			return
